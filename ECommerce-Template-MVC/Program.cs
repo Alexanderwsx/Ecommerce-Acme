@@ -8,7 +8,7 @@ var connectionString = builder.Configuration.GetConnectionString("DbContextConne
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultUI();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders().AddDefaultUI();
 
 
 
@@ -46,5 +46,21 @@ app.MapRazorPages(); //permet l'utilisation de razorpage
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+//Execute dbInitializer
+var scope = app.Services.CreateScope();
+var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>(); 
+try
+{
+    await context.Database.MigrateAsync();
+    await DbInitializer.Initialize(context, userManager);
+}
+catch (Exception ex)
+{
+    logger.LogError(ex, "An error occurred creating the DB.");
+}
 
 app.Run();

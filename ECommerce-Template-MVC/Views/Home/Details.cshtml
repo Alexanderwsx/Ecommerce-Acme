@@ -1,0 +1,36 @@
+﻿@model ShoppingCart
+
+<form method="post">
+    <input hidden asp-for="ProductId" />
+    <div class="container m-10 pt-5">
+        <div class="row flex-column flex-sm-row justify-content-center text-center align-content-center">
+
+            <div class="col-12 col-md-6 mb-4 ">
+                <img src="@Model.Product.ImageUrl" width=50% alt="Produit">
+            </div>
+
+            <div class="col-12 col-md-6 text-center">
+                <h3>
+                    @Model.Product.Name
+                </h3>
+                <p>Marque: @Model.Product.Brand</p>
+                <hr />
+                <h4>@Model.Product.Price.ToString("c")</h4>
+                <div class="row pl-2">
+                    <div class="form-control col-8">
+                        <input asp-for="Count" class="form-control" min="1" />
+                    </div>
+                    <button class="addToCart" data-productid="@Model.ProductId">Agregar al carrito</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 mb-4 mt-4">
+            <h3> À propos de cet article </h3>
+            <p>@Html.Raw(Model.Product.Description)</p>
+        </div>
+</form>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="~/js/addToLocalCart.js"></script>

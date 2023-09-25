@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace ECommerce_Template_MVC.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreated : Migration
+    public partial class Initialcreated : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,7 +32,7 @@ namespace ECommerce_Template_MVC.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Nom = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Nom = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Prenom = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Adresse = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Ville = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -121,8 +123,8 @@ namespace ECommerce_Template_MVC.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -166,8 +168,8 @@ namespace ECommerce_Template_MVC.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -272,6 +274,16 @@ namespace ECommerce_Template_MVC.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "5f5d3e78-3987-4463-89e2-19f6cb2ceb8c", null, "Admin", "ADMIN" },
+                    { "64b66078-a0ae-4897-8166-536ccc7bef4d", null, "Individuel", "USER" },
+                    { "71896d6c-51ef-4a4d-9dd1-f0f2fd80f185", null, "Employe", "EMPLOYE" }
                 });
 
             migrationBuilder.CreateIndex(

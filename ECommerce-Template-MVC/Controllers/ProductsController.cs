@@ -56,7 +56,7 @@ namespace ECommerce_Template_MVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Type,Price,QuantiteEnStock,ImageUrl")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Type,Brand,Price,QuantiteEnStock,ImageUrl")] Product product)
         {
             if (ModelState.IsValid)
             {
@@ -88,7 +88,7 @@ namespace ECommerce_Template_MVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Type,Price,QuantiteEnStock,ImageUrl")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Type,Brand,Price,QuantiteEnStock,ImageUrl")] Product product)
         {
             if (id != product.Id)
             {

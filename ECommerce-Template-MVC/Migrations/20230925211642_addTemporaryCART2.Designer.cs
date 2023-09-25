@@ -4,6 +4,7 @@ using ECommerce_Template_MVC.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce_Template_MVC.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230925211642_addTemporaryCART2")]
+    partial class addTemporaryCART2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -277,7 +280,7 @@ namespace ECommerce_Template_MVC.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
@@ -324,19 +327,19 @@ namespace ECommerce_Template_MVC.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "84202ff8-d649-49a9-98f2-6326eca8c1d9",
+                            Id = "a449dee3-0739-4917-b81a-e7a01a96771d",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "9dbaf121-ca45-44a7-a17e-7f6071fa3ae3",
+                            Id = "5c5bdc13-ae89-4d21-8c44-913876b134d3",
                             Name = "Individuel",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "c1451212-3ac1-46c2-9826-a4ae66306649",
+                            Id = "6c1b571c-971c-4e9a-9f5f-9a58602e3f05",
                             Name = "Employe",
                             NormalizedName = "EMPLOYE"
                         });

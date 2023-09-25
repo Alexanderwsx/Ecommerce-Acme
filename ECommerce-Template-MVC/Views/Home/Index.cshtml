@@ -1,8 +1,86 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@using ECommerce_Template_MVC.Models.ViewModel;
+@using X.PagedList
+@using ECommerce_Template_MVC.Models
+@using X.PagedList.Mvc.Core;
+@using X.PagedList.Web.Common;
+@model ProductsViewModel
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h1>Liste des produits</h1>
+
+<form method="get" action="@Url.Action("Index")">
+
+    <div class="filter-section">
+        <label>Recherche par nom:</label>
+        <input type="text" name="searchTerm" placeholder="Recherche par nom" value="@Context.Request.Query["searchTerm"]" />
+    </div>
+
+    <div class="filter-section">
+        <label>Recherche par type:</label>
+        @foreach (var type in Model.ProductTypes)
+        {
+            <div>
+                <input type="checkbox" name="types" value="@type" @(Context.Request.Query["types"].Contains(type) ? "checked" : "") /> @type
+            </div>
+        }
+    </div>
+
+    <div class="filter-section">
+        <label>Recherche par prix:</label>
+        <input type="number" name="priceMin" placeholder="Prix min" value="@Context.Request.Query["priceMin"]" />
+        <input type="number" name="priceMax" placeholder="Prix max" value="@Context.Request.Query["priceMax"]" />
+    </div>
+
+    <button type="submit">Appliquer les filtres</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Marque</th>
+            <th>Prix</th>
+            <th>Quantité en stock</th>
+            <th>Image</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model.Products)
+        {
+            <tr>
+                <td>@product.Name</td>
+                <td>@product.Description</td>
+                <td>@product.Type</td>
+                <td>@product.Brand</td>
+                <td>@product.Price</td>
+                <td>@product.QuantiteEnStock</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+                    {
+                        <img src="@product.ImageUrl" alt="@product.Name" width="100" />
+                    }
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-productId="@product.Id">Details</a>
+                </td> 
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="pagination">
+    @Html.PagedListPager(Model.Products, page => Url.Action("Index", new { page }), new PagedListRenderOptions() { 
+       ContainerDivClasses = new[] { "pagination" }
+    })
 </div>
+
+<style>
+    .filter-section {
+        margin-bottom: 15px;
+    }
+
+    /* Otros estilos necesarios */
+</style>
+

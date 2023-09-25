@@ -1,47 +1,37 @@
-﻿@model IEnumerable<ECommerce_Template_MVC.Models.ShoppingCart>
+﻿@model ECommerce_Template_MVC.Models.ViewModel.ShoppingCartVM
 
-@{
-    ViewData["Title"] = "Index";
-}
+<h2>Carrito de Compras</h2>
 
-<h1>Index</h1>
+<div id="cartItemsContainer">
+    @if (User.Identity.IsAuthenticated)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.ListCart)
+                {
+                    <tr>
+                        <td>@item.Product.Name</td>
+                        <td>@item.Count</td>
+                        <td>@item.Price.ToString("C")</td>
+                        <td>@(item.Count * item.Price)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Product)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Count)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ApplicationUser)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Product.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Count)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ApplicationUser.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+        <h3>Total General: @Model.ListCart.Sum(x => x.Count * x.Price).ToString("C")</h3>
+    }
+</div>
+
+
+    <script src="~/js/ShowCartFromLocalStorage.js"></script>
+
+

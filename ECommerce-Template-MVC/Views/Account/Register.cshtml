@@ -1,0 +1,11 @@
+﻿@model ECommerce_Template_MVC.Models.ApplicationUser
+
+<!-- ... -->
+
+<form asp-action="Register" method="post">
+    <input asp-for="Email" />
+    <input asp-for="Nom" />
+    <!-- ... otros campos ... -->
+    <input name="Password" type="password" />
+    <button type="submit">Registrarse</button>
+</form>

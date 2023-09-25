@@ -7,24 +7,43 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ECommerce_Template_MVC.Data;
 using ECommerce_Template_MVC.Models;
+using ECommerce_Template_MVC.Models.ViewModel;
+using Microsoft.AspNetCore.Identity;
 
 namespace ECommerce_Template_MVC.Controllers
 {
     public class ShoppingCartsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly ApplicationDbContext _context;
 
-        public ShoppingCartsController(ApplicationDbContext context)
+        public ShoppingCartsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: ShoppingCarts
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.ShoppingCarts.Include(s => s.ApplicationUser).Include(s => s.Product);
-            return View(await applicationDbContext.ToListAsync());
+            var cartItems = new List<ShoppingCart>();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                cartItems = _context.ShoppingCarts
+                    .Where(x => x.ApplicationUserId == user.Id).Include(x => x.Product)
+                    .ToList();
+            }
+
+            var viewModel = new ShoppingCartVM
+            {
+                ListCart = cartItems
+            };
+
+            return View(viewModel);
         }
+
 
         // GET: ShoppingCarts/Details/5
         public async Task<IActionResult> Details(int? id)

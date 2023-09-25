@@ -4,6 +4,7 @@ using ECommerce_Template_MVC.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce_Template_MVC.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230920050736_Initialcreated")]
+    partial class Initialcreated
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -229,10 +232,6 @@ namespace ECommerce_Template_MVC.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Brand")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -268,23 +267,14 @@ namespace ECommerce_Template_MVC.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ApplicationUserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Count")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsTemporary")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18, 2)");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
-
-                    b.Property<string>("TempCartId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -324,19 +314,19 @@ namespace ECommerce_Template_MVC.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "84202ff8-d649-49a9-98f2-6326eca8c1d9",
+                            Id = "5f5d3e78-3987-4463-89e2-19f6cb2ceb8c",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "9dbaf121-ca45-44a7-a17e-7f6071fa3ae3",
+                            Id = "64b66078-a0ae-4897-8166-536ccc7bef4d",
                             Name = "Individuel",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "c1451212-3ac1-46c2-9826-a4ae66306649",
+                            Id = "71896d6c-51ef-4a4d-9dd1-f0f2fd80f185",
                             Name = "Employe",
                             NormalizedName = "EMPLOYE"
                         });
@@ -482,7 +472,9 @@ namespace ECommerce_Template_MVC.Migrations
                 {
                     b.HasOne("ECommerce_Template_MVC.Models.ApplicationUser", "ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("ApplicationUserId");
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ECommerce_Template_MVC.Models.Product", "Product")
                         .WithMany()

@@ -21,7 +21,7 @@ namespace ECommerce_Template_MVC.Models
         public string Type { get; set; }
 
         [Required]
-        string Brand { get; set; }
+        public string Brand { get; set; }
 
         [Required]
         [DisplayName("Prix")]
