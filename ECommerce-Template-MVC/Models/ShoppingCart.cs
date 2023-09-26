@@ -21,9 +21,9 @@ namespace ECommerce_Template_MVC.Models
         public ApplicationUser? ApplicationUser { get; set; }
 
         //pour savoir si le produit est dans le panier (pour le checkout)
-        public bool IsTemporary { get; set; }
+        public bool? IsTemporary { get; set; }
 
-        public string TempCartId { get; set; }
+        public string? TempCartId { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Price { get; set; }

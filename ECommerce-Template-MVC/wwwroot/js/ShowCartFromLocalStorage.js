@@ -1,7 +1,8 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
- 
-        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        renderCart(cart);
+
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    renderCart(cart);
+
 
 });
 

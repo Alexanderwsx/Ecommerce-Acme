@@ -2,7 +2,6 @@
     $(".addToCart").on("click", function (event) {
         event.preventDefault();
         var productId = $(this).data("productid");
-        console.log("button clickerds!");
         $.post('/Home/AddToCart', { productId: productId }, function (response) {
             if (response.addToLocalStorage) {
                 var cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -22,9 +21,7 @@
                 }
 
                 localStorage.setItem("cart", JSON.stringify(cart));
-                alert("Producto añadido al carritods!");
-                console.log(cart);
-                console.log(response);
+                alert("Producto añadido al carritods!");              
             }
         }).fail(function (jqXHR, textStatus, errorThrown) {
             console.error("Error al agregar al carrito: ", textStatus, errorThrown);

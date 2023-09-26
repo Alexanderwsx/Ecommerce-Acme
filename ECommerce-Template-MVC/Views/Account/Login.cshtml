@@ -10,7 +10,7 @@
 <div class="row">
     <div class="col-md-4">
         <section>
-            <form asp-action="Login" method="post">
+            <form asp-action="Login" method="post" id="loginForm">
 
                 <hr />
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
@@ -49,4 +49,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/addCartWhenLogin.js"></script>
 }

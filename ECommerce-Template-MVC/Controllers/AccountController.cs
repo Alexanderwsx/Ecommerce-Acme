@@ -5,6 +5,7 @@ using ECommerce_Template_MVC.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace ECommerce_Template_MVC.Controllers
 {
@@ -51,44 +52,68 @@ namespace ECommerce_Template_MVC.Controllers
             return View();
         }
 
+
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null, string localCart = null)
         {
-            // Si el modelo es válido, procedemos con el intento de inicio de sesión
             if (ModelState.IsValid)
             {
-                // Intentamos iniciar sesión con las credenciales proporcionadas
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-               
                 if (result.Succeeded)
                 {
-                    // Si el inicio de sesión es exitoso, redirigimos al usuario a la página principal o a la URL de retorno (si se proporciona)
+                    if (!string.IsNullOrEmpty(localCart) && localCart != "null")
+                    {
+                        // Deserializar el carrito de compras del localStorage
+                        var localCartItems = JsonConvert.DeserializeObject<List<ShoppingCart>>(localCart);
+
+                        // Obtener el usuario actual
+                        var user = await _userManager.FindByNameAsync(model.Email);
+
+                        foreach (var item in localCartItems)
+                        {
+                            // Verificar si el producto ya existe en el carrito del usuario
+                            var cartItem = _context.ShoppingCarts.FirstOrDefault(x => x.ProductId == item.ProductId && x.ApplicationUserId == user.Id);
+                            if (cartItem != null)
+                            {
+                                // Si el producto ya está en el carrito del usuario, suma la cantidad
+                                cartItem.Count += item.Count;
+                            }
+                            else
+                            {
+                                // Si el producto no está en el carrito del usuario, agrégalo
+                                _context.ShoppingCarts.Add(new ShoppingCart
+                                {
+                                    ProductId = item.ProductId,
+                                    Count = item.Count,
+                                    ApplicationUserId = user.Id
+                                });
+                            }
+                        }
+
+                        // Guardar los cambios en la base de datos
+                        await _context.SaveChangesAsync();
+                    }
+
+                    // Redireccionar al usuario
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     {
-                        return Redirect(returnUrl);
+                        return Json(new { success = true, redirectUrl = returnUrl });
                     }
                     else
                     {
-                        return RedirectToAction(nameof(HomeController.Index), "Home");
+                        return Json(new { success = true, redirectUrl = Url.Action(nameof(HomeController.Index), "Home") });
                     }
                 }
-                //else if (result.IsLockedOut)
-                //{
-                //    // Si la cuenta del usuario está bloqueada, puedes redirigirlo a una página específica o mostrar un mensaje
-                //    return RedirectToAction(nameof(Lockout));
-                //}
                 else
                 {
-                    // Si el inicio de sesión falla, mostramos un mensaje de error y volvemos a mostrar el formulario
-                    ModelState.AddModelError(string.Empty, "Intento de inicio de sesión no válido.");
-                    return View(model);
+                    return Json(new { success = false, message = "Intento de inicio de sesión no válido." });
                 }
             }
-
-            // Si llegamos hasta aquí, algo falló, volver a mostrar el formulario
-            return View(model);
+            // Si el modelo no es válido, puedes decidir qué hacer. Por ejemplo, podrías devolver un mensaje de error.
+            return Json(new { success = false, message = "Datos de inicio de sesión no válidos." });
         }
+
     }
 }

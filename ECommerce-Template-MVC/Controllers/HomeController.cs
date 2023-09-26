@@ -96,18 +96,32 @@ namespace ECommerce_Template_MVC.Controllers
 
             if (User.Identity.IsAuthenticated)
             {
-                var cartItem = new ShoppingCart
+                var userId = (await _userManager.GetUserAsync(User)).Id;
+
+                // Verifica si el producto ya existe en el carrito del usuario.
+                var existingCartItem = _context.ShoppingCarts
+                    .FirstOrDefault(sc => sc.ProductId == productId && sc.ApplicationUserId == userId);
+
+                if (existingCartItem != null)
                 {
-                    ProductId = productId,
-                    Count = 1,
-                    Price = product.Price,
-                    ApplicationUserId = (await _userManager.GetUserAsync(User)).Id,
-                    IsTemporary = false
-                };
+                    // Si el producto ya existe en el carrito, simplemente incrementa el conteo.
+                    existingCartItem.Count++;
+                }
+                else
+                {
+                    // Si no existe, crea un nuevo artículo del carrito.
+                    var newCartItem = new ShoppingCart
+                    {
+                        ProductId = productId,
+                        Count = 1,
+                        Price = product.Price,
+                        ApplicationUserId = userId,
+                        IsTemporary = false
+                    };
+                    _context.ShoppingCarts.Add(newCartItem);
+                }
 
-                _context.ShoppingCarts.Add(cartItem);
                 await _context.SaveChangesAsync();
-
                 return RedirectToAction("Index");
             }
             else
@@ -115,6 +129,7 @@ namespace ECommerce_Template_MVC.Controllers
                 return Json(new { addToLocalStorage = true, product = new { ProductId = productId, Count = 1, Price = product.Price, ProductName = product.Name } });
             }
         }
+
 
     }
 }

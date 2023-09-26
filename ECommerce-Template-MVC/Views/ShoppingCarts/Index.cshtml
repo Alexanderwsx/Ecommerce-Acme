@@ -8,7 +8,7 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Producto</th>
+                    <th>Productos</th>
                     <th>Cantidad</th>
                     <th>Precio</th>
                     <th>Total</th>
@@ -31,7 +31,7 @@
     }
 </div>
 
-
-    <script src="~/js/ShowCartFromLocalStorage.js"></script>
-
-
+@if (!User.Identity.IsAuthenticated)
+{
+<script src="~/js/ShowCartFromLocalStorage.js"></script>
+}
