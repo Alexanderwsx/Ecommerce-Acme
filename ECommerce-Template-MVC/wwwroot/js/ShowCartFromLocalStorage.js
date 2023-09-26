@@ -14,7 +14,7 @@ function renderCart(cart) {
         total += item.Count * item.Price;
         htmlContent += `
             <tr>
-                <td>${item.productName}</td>
+                <td>${item.ProductName}</td>
                 <td>${item.Count}</td>
                 <td>${item.Price}</td>
                 <td>${(item.Count * item.Price).toFixed(2)}</td>

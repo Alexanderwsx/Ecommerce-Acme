@@ -13,19 +13,21 @@
                 } else {
                     // Aquí adaptamos la estructura del objeto producto
                     var newProduct = {
-                        ProductId: response.product.ProductId,
-                        Count: response.product.Count,
-                        Price: response.product.Price,
-                        Product: { Name: response.product.ProductName }  // Usamos el ProductName aquí
+                        ProductId: response.product.productId,
+                        Count: response.product.count,
+                        Price: response.product.price,
+                        ProductName: response.product.productName  // Usamos el ProductName aquí
                     };
                     cart.push(newProduct);
                 }
 
                 localStorage.setItem("cart", JSON.stringify(cart));
                 alert("Producto añadido al carritods!");
+                console.log(cart);
+                console.log(response);
             }
-            console.log(response);
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            console.error("Error al agregar al carrito: ", textStatus, errorThrown);
         });
-
     });
 });

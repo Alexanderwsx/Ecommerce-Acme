@@ -41,5 +41,10 @@ namespace ECommerce_Template_MVC.Controllers
             }
             return View(user);
         }
+
+        public IActionResult Login()
+        {
+            return View();
+        }
     }
 }
