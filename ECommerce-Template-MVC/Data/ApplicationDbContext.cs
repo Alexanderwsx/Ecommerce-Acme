@@ -29,19 +29,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
 
                 Name = SD.Role_Admin,
-                NormalizedName = "ADMIN"
+                NormalizedName = SD.Role_Admin
             },
             new IdentityRole
             {
 
                 Name = SD.Role_User_Individuel,
-                NormalizedName = "USER"
+                NormalizedName = SD.Role_User_Individuel
             },
             new IdentityRole
             {
 
                 Name = SD.Role_Employe,
-                NormalizedName = "EMPLOYE"
+                NormalizedName = SD.Role_Employe
             }
 
       );

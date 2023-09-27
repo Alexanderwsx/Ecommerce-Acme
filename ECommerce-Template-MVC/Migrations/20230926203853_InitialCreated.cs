@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ECommerce_Template_MVC.Migrations
 {
     /// <inheritdoc />
-    public partial class Initialcreated : Migration
+    public partial class InitialCreated : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -68,6 +68,7 @@ namespace ECommerce_Template_MVC.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Brand = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     QuantiteEnStock = table.Column<int>(type: "int", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -229,7 +230,8 @@ namespace ECommerce_Template_MVC.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     Count = table.Column<int>(type: "int", nullable: false),
-                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -238,8 +240,7 @@ namespace ECommerce_Template_MVC.Migrations
                         name: "FK_ShoppingCarts_AspNetUsers_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_ShoppingCarts_Products_ProductId",
                         column: x => x.ProductId,
@@ -281,9 +282,9 @@ namespace ECommerce_Template_MVC.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "5f5d3e78-3987-4463-89e2-19f6cb2ceb8c", null, "Admin", "ADMIN" },
-                    { "64b66078-a0ae-4897-8166-536ccc7bef4d", null, "Individuel", "USER" },
-                    { "71896d6c-51ef-4a4d-9dd1-f0f2fd80f185", null, "Employe", "EMPLOYE" }
+                    { "b56f164e-9bd2-4be9-9c68-5b4f2be6ccb6", null, "User", "User" },
+                    { "b960816b-995a-404f-a955-5276d360cd4b", null, "Admin", "Admin" },
+                    { "ee0c33cb-13c2-4866-9b01-a9fafaa7f24f", null, "Employe", "Employe" }
                 });
 
             migrationBuilder.CreateIndex(

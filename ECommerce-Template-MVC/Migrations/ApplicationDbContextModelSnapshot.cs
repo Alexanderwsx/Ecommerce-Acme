@@ -273,17 +273,11 @@ namespace ECommerce_Template_MVC.Migrations
                     b.Property<int>("Count")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("IsTemporary")
-                        .HasColumnType("bit");
-
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
-
-                    b.Property<string>("TempCartId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -323,21 +317,21 @@ namespace ECommerce_Template_MVC.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "5d0f18ed-be64-4d95-8a96-3d2604c5c381",
+                            Id = "b960816b-995a-404f-a955-5276d360cd4b",
                             Name = "Admin",
-                            NormalizedName = "ADMIN"
+                            NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "99abeccb-2c2a-4a49-be54-c7e1349a313d",
-                            Name = "Individuel",
-                            NormalizedName = "USER"
+                            Id = "b56f164e-9bd2-4be9-9c68-5b4f2be6ccb6",
+                            Name = "User",
+                            NormalizedName = "User"
                         },
                         new
                         {
-                            Id = "ad060aac-994a-49e7-92f0-a076b069500c",
+                            Id = "ee0c33cb-13c2-4866-9b01-a9fafaa7f24f",
                             Name = "Employe",
-                            NormalizedName = "EMPLOYE"
+                            NormalizedName = "Employe"
                         });
                 });
 

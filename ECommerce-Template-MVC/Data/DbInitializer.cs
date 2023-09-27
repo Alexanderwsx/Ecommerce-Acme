@@ -30,8 +30,35 @@ namespace ECommerce_Template_MVC.Data
                 await userManager.CreateAsync (user, "Pa$$w0rd");
                 await userManager.AddToRoleAsync (user, SD.Role_User_Individuel);
 
-                context.SaveChanges();
             }
+
+            if(context.Products.Any())
+            {
+                return;
+            }
+            //make another 10 product more
+            for (int i = 0; i < 10; i++)
+            {
+                Product produit = new Product
+                {
+                    QuantiteEnStock = 10,
+                    Name = "Produit " + i,
+                    Description = "Description du produit " + i,
+                    Type = "Type " + i,
+                    Brand = "Brand " + i,
+                    Price = 10+i,
+                };
+
+                context.Products.Add(produit);
+            }
+            context.SaveChanges();
+
         }
+
+
+        //add dummy data to the database for testing purposes
+        //add produits
+
+
     }
 }

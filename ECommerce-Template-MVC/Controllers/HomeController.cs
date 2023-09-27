@@ -76,20 +76,11 @@ namespace ECommerce_Template_MVC.Controllers
             return View(cartObj);
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+      
 
 
         [HttpPost]
-        public async Task<IActionResult> AddToCart(int productId)
+        public async Task<IActionResult> AddToCart(int productId, int count)
         {
             var product = _context.Products.Find(productId);
             if (product == null) return NotFound();
@@ -105,7 +96,7 @@ namespace ECommerce_Template_MVC.Controllers
                 if (existingCartItem != null)
                 {
                     // Si el producto ya existe en el carrito, simplemente incrementa el conteo.
-                    existingCartItem.Count++;
+                    existingCartItem.Count+=count;
                 }
                 else
                 {
@@ -113,10 +104,9 @@ namespace ECommerce_Template_MVC.Controllers
                     var newCartItem = new ShoppingCart
                     {
                         ProductId = productId,
-                        Count = 1,
+                        Count = count,
                         Price = product.Price,
                         ApplicationUserId = userId,
-                        IsTemporary = false
                     };
                     _context.ShoppingCarts.Add(newCartItem);
                 }
@@ -126,10 +116,21 @@ namespace ECommerce_Template_MVC.Controllers
             }
             else
             {
-                return Json(new { addToLocalStorage = true, product = new { ProductId = productId, Count = 1, Price = product.Price, ProductName = product.Name } });
+                return Json(new { addToLocalStorage = true, product = new { ProductId = productId, Count = count, Price = product.Price, ProductName = product.Name } });
             }
         }
 
 
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
     }
 }

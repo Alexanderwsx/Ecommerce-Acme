@@ -1,6 +1,6 @@
 ﻿@model ShoppingCart
 
-<form method="post">
+<form method="post" asp-action="AddToCart">
     <input hidden asp-for="ProductId" />
     <div class="container m-10 pt-5">
         <div class="row flex-column flex-sm-row justify-content-center text-center align-content-center">
@@ -21,6 +21,7 @@
                         <input asp-for="Count" class="form-control" min="1" />
                     </div>
                     <button class="addToCart" data-productid="@Model.ProductId">Agregar al carrito</button>
+
                 </div>
             </div>
         </div>

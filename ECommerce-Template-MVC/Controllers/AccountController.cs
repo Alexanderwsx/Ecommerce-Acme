@@ -32,7 +32,7 @@ namespace ECommerce_Template_MVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                user.UserName= user.Email;
+                user.UserName = user.Email;
                 var result = await _userManager.CreateAsync(user, Password);
                 if (result.Succeeded)
                 {
@@ -87,7 +87,8 @@ namespace ECommerce_Template_MVC.Controllers
                                 {
                                     ProductId = item.ProductId,
                                     Count = item.Count,
-                                    ApplicationUserId = user.Id
+                                    ApplicationUserId = user.Id,
+                                    Price = _context.Products.Find(item.ProductId).Price
                                 });
                             }
                         }

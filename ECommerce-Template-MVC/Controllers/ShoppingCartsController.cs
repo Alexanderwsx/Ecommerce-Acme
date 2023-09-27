@@ -45,106 +45,29 @@ namespace ECommerce_Template_MVC.Controllers
         }
 
 
-        // GET: ShoppingCarts/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Plus(int cartID)
         {
-            if (id == null || _context.ShoppingCarts == null)
-            {
-                return NotFound();
-            }
-
-            var shoppingCart = await _context.ShoppingCarts
-                .Include(s => s.ApplicationUser)
-                .Include(s => s.Product)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (shoppingCart == null)
-            {
-                return NotFound();
-            }
-
-            return View(shoppingCart);
+            var cart = _context.ShoppingCarts.FirstOrDefault(x => x.Id == cartID);
+            cart.Count += 1;
+            _context.SaveChanges();
+            return View(nameof(Index));
         }
 
-        // GET: ShoppingCarts/Create
-        public IActionResult Create()
+        public IActionResult Minus(int cartID)
         {
-            ViewData["ApplicationUserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id");
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Description");
-            return View();
+            var cart= _context.ShoppingCarts.FirstOrDefault(x => x.Id == cartID);
+            if (cart.Count <= 1)
+            {
+                _context.ShoppingCarts.Remove(cart);
+            }
+            else
+            {
+                cart.Count -= 1;
+            }
+            _context.SaveChanges();
+            return View(nameof(Index));
         }
-
-        // POST: ShoppingCarts/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ProductId,Count,ApplicationUserId")] ShoppingCart shoppingCart)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(shoppingCart);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["ApplicationUserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", shoppingCart.ApplicationUserId);
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Description", shoppingCart.ProductId);
-            return View(shoppingCart);
-        }
-
-        // GET: ShoppingCarts/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null || _context.ShoppingCarts == null)
-            {
-                return NotFound();
-            }
-
-            var shoppingCart = await _context.ShoppingCarts.FindAsync(id);
-            if (shoppingCart == null)
-            {
-                return NotFound();
-            }
-            ViewData["ApplicationUserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", shoppingCart.ApplicationUserId);
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Description", shoppingCart.ProductId);
-            return View(shoppingCart);
-        }
-
-        // POST: ShoppingCarts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ProductId,Count,ApplicationUserId")] ShoppingCart shoppingCart)
-        {
-            if (id != shoppingCart.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(shoppingCart);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ShoppingCartExists(shoppingCart.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["ApplicationUserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", shoppingCart.ApplicationUserId);
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Description", shoppingCart.ProductId);
-            return View(shoppingCart);
-        }
+      
 
         // GET: ShoppingCarts/Delete/5
         public async Task<IActionResult> Delete(int? id)

@@ -3,7 +3,7 @@
     public class SD
     {
         //ROlES
-        public const string Role_User_Individuel = "Individuel";
+        public const string Role_User_Individuel = "User";
         public const string Role_Admin = "Admin";
         public const string Role_Employe = "Employe";
 

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce_Template_MVC.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230924063346_branToPublic")]
-    partial class branToPublic
+    [Migration("20230926203853_InitialCreated")]
+    partial class InitialCreated
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -271,11 +271,13 @@ namespace ECommerce_Template_MVC.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ApplicationUserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Count")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
@@ -318,21 +320,21 @@ namespace ECommerce_Template_MVC.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "f5258eff-d351-413f-99ae-35d38b790612",
+                            Id = "b960816b-995a-404f-a955-5276d360cd4b",
                             Name = "Admin",
-                            NormalizedName = "ADMIN"
+                            NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "7b29b53c-240f-4abb-8ceb-2e9e28b9e5c2",
-                            Name = "Individuel",
-                            NormalizedName = "USER"
+                            Id = "b56f164e-9bd2-4be9-9c68-5b4f2be6ccb6",
+                            Name = "User",
+                            NormalizedName = "User"
                         },
                         new
                         {
-                            Id = "97a6f67b-4dab-462c-bef0-07ce64e73ab3",
+                            Id = "ee0c33cb-13c2-4866-9b01-a9fafaa7f24f",
                             Name = "Employe",
-                            NormalizedName = "EMPLOYE"
+                            NormalizedName = "Employe"
                         });
                 });
 
@@ -476,9 +478,7 @@ namespace ECommerce_Template_MVC.Migrations
                 {
                     b.HasOne("ECommerce_Template_MVC.Models.ApplicationUser", "ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ApplicationUserId");
 
                     b.HasOne("ECommerce_Template_MVC.Models.Product", "Product")
                         .WithMany()

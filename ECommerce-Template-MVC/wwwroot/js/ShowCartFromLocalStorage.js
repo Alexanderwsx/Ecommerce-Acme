@@ -9,7 +9,7 @@
 function renderCart(cart) {
     let container = document.getElementById("cartItemsContainer");
     let total = 0;
-    let htmlContent = '<table class="table">...'; // Header del table
+    let htmlContent = '<table class="table">            <thead><tr><th>Productos</th> <th>Cantidad</th> <th>Precio</th><th>Total</th></tr ></thead > '; // Header del table
 
     cart.forEach(item => {
         total += item.Count * item.Price;
