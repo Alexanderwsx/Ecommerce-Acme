@@ -76,7 +76,6 @@ namespace ECommerce_Template_MVC.Controllers
             return View(cartObj);
         }
 
-      
 
 
         [HttpPost]
@@ -85,22 +84,31 @@ namespace ECommerce_Template_MVC.Controllers
             var product = _context.Products.Find(productId);
             if (product == null) return NotFound();
 
+            // Verificar si la cantidad solicitada no excede el stock disponible
+            if (count > product.QuantiteEnStock)
+            {
+                // Maneja el error: la cantidad solicitada excede el stock disponible.
+                return View("Error", "La cantidad solicitada excede el stock disponible.");
+            }
+
             if (User.Identity.IsAuthenticated)
             {
                 var userId = (await _userManager.GetUserAsync(User)).Id;
 
-                // Verifica si el producto ya existe en el carrito del usuario.
                 var existingCartItem = _context.ShoppingCarts
                     .FirstOrDefault(sc => sc.ProductId == productId && sc.ApplicationUserId == userId);
 
                 if (existingCartItem != null)
                 {
-                    // Si el producto ya existe en el carrito, simplemente incrementa el conteo.
-                    existingCartItem.Count+=count;
+                    // Verifica si la cantidad total no excede el stock disponible
+                    if (existingCartItem.Count + count > product.QuantiteEnStock)
+                    {
+                        return View("Error", "La cantidad total excede el stock disponible.");
+                    }
+                    existingCartItem.Count += count;
                 }
                 else
                 {
-                    // Si no existe, crea un nuevo artículo del carrito.
                     var newCartItem = new ShoppingCart
                     {
                         ProductId = productId,
@@ -116,9 +124,10 @@ namespace ECommerce_Template_MVC.Controllers
             }
             else
             {
-                return Json(new { addToLocalStorage = true, product = new { ProductId = productId, Count = count, Price = product.Price, ProductName = product.Name } });
+                return Json(new { addToLocalStorage = true, product = new { ProductId = productId, Count = count, Price = product.Price, ProductName = product.Name, Stock = product.QuantiteEnStock } });
             }
         }
+
 
 
 

@@ -34,7 +34,11 @@ namespace ECommerce_Template_MVC.Models
         public int QuantiteEnStock { get; set; }
 
         [ValidateNever]
-        public string? ImageUrl { get; set; }
+        public List<ProductImage> Images { get; set; }
+        [ValidateNever]
+
+        [NotMapped]
+        public List<IFormFile> ImageFiles { get; set; }
 
 
     }

@@ -57,10 +57,10 @@
                 <td>@product.Price</td>
                 <td>@product.QuantiteEnStock</td>
                 <td>
-                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+               @*     @if (!string.IsNullOrEmpty(product.ImageUrl))
                     {
                         <img src="@product.ImageUrl" alt="@product.Name" width="100" />
-                    }
+                    }*@
                 </td>
                 <td>
                     <a asp-action="Details" asp-route-productId="@product.Id">Details</a>

@@ -7,16 +7,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ECommerce_Template_MVC.Data;
 using ECommerce_Template_MVC.Models;
+using Microsoft.Extensions.Hosting;
 
 namespace ECommerce_Template_MVC.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
+            _hostEnvironment = hostEnvironment;
         }
 
         // GET: Products
@@ -35,7 +38,7 @@ namespace ECommerce_Template_MVC.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
+            var product = await _context.Products.Include(x => x.Images)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (product == null)
             {
@@ -56,16 +59,46 @@ namespace ECommerce_Template_MVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Type,Brand,Price,QuantiteEnStock,ImageUrl")] Product product)
+        public async Task<IActionResult> Create(Product product, IFormFile[] ImageFiles)
         {
             if (ModelState.IsValid)
             {
+                if (ImageFiles != null && ImageFiles.Any())
+                {
+
+                    product.Images = new List<ProductImage>();
+
+                    foreach (var imageFile in ImageFiles)
+                    {
+                        // Genera un nombre de archivo único
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+
+                        // Define la ruta de guardado, asumiendo que guardas las imágenes en un directorio "images" en wwwroot
+                        var filePath = Path.Combine(_hostEnvironment.WebRootPath, "images", fileName);
+
+                        // Crea el directorio si no existe
+                        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+                        // Guarda el archivo en el servidor
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+
+                        // Añade la URL (ruta relativa) a la lista de imágenes del producto
+                        product.Images.Add(new ProductImage { ImageUrl = "/images/" + fileName });
+                    }
+                }
+
                 _context.Add(product);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(product);
         }
+
+
 
         // GET: Products/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -88,7 +121,7 @@ namespace ECommerce_Template_MVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Type,Brand,Price,QuantiteEnStock,ImageUrl")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Type,Brand,Price,QuantiteEnStock")] Product product)
         {
             if (id != product.Id)
             {
@@ -141,19 +174,33 @@ namespace ECommerce_Template_MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Products == null)
+            var product = await _context.Products
+                .Include(p => p.Images)  // Asegúrate de incluir las imágenes asociadas
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (product == null)
             {
-                return Problem("Entity set 'ApplicationDbContext.Products'  is null.");
+                return NotFound();
             }
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
+
+            // Eliminar archivos físicos asociados
+            foreach (var image in product.Images)
             {
-                _context.Products.Remove(product);
+                var imagePath = Path.Combine(_hostEnvironment.WebRootPath, image.ImageUrl.TrimStart('/'));
+
+                if (System.IO.File.Exists(imagePath))
+                {
+                    System.IO.File.Delete(imagePath);
+                }
             }
-            
+
+            // Eliminar el producto y sus imágenes de la base de datos
+            _context.Products.Remove(product);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool ProductExists(int id)
         {

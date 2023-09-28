@@ -12,6 +12,7 @@
                     <th>Cantidad</th>
                     <th>Precio</th>
                     <th>Total</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -19,9 +20,22 @@
                 {
                     <tr>
                         <td>@item.Product.Name</td>
-                        <td>@item.Count</td>
+                        <td>
+                            <span class="product-count">@item.Count</span>
+                        </td>
                         <td>@item.Price.ToString("C")</td>
                         <td>@(item.Count * item.Price)</td>
+                        <td>
+                            <a asp-action="Plus" asp-route-cartId="@item.Id" class="btn btn-primary @(item.Count >= item.Product.QuantiteEnStock ? "disabled" : "")">
+                                <i class="bi bi-plus-square">+</i>
+                            </a> &nbsp;
+                            <a asp-action="Minus" asp-route-cartId="@item.Id" class="btn btn-warning">
+                                <i class="bi bi-dash-square">-</i>
+                            </a>
+                            <a asp-action="Remove" asp-route-cartId="@item.Id" class="btn btn-danger">
+                                <i class="bi bi-trash">Delete</i>
+                            </a>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -33,5 +47,5 @@
 
 @if (!User.Identity.IsAuthenticated)
 {
-<script src="~/js/ShowCartFromLocalStorage.js"></script>
+    <script src="~/js/ShowCartFromLocalStorage.js"></script>
 }

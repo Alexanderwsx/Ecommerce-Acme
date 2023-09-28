@@ -14,8 +14,8 @@ namespace ECommerce_Template_MVC.Controllers
 {
     public class ShoppingCartsController : Controller
     {
-		private readonly UserManager<ApplicationUser> _userManager;
-		private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
         public ShoppingCartsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
@@ -48,14 +48,20 @@ namespace ECommerce_Template_MVC.Controllers
         public IActionResult Plus(int cartID)
         {
             var cart = _context.ShoppingCarts.FirstOrDefault(x => x.Id == cartID);
-            cart.Count += 1;
-            _context.SaveChanges();
-            return View(nameof(Index));
+           
+            int stock = _context.Products.FirstOrDefault(x => x.Id == cart.ProductId).QuantiteEnStock;
+
+            if (cart.Count < stock)
+            {
+                cart.Count += 1;
+                _context.SaveChanges();
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Minus(int cartID)
         {
-            var cart= _context.ShoppingCarts.FirstOrDefault(x => x.Id == cartID);
+            var cart = _context.ShoppingCarts.FirstOrDefault(x => x.Id == cartID);
             if (cart.Count <= 1)
             {
                 _context.ShoppingCarts.Remove(cart);
@@ -65,52 +71,20 @@ namespace ECommerce_Template_MVC.Controllers
                 cart.Count -= 1;
             }
             _context.SaveChanges();
-            return View(nameof(Index));
-        }
-      
-
-        // GET: ShoppingCarts/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.ShoppingCarts == null)
-            {
-                return NotFound();
-            }
-
-            var shoppingCart = await _context.ShoppingCarts
-                .Include(s => s.ApplicationUser)
-                .Include(s => s.Product)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (shoppingCart == null)
-            {
-                return NotFound();
-            }
-
-            return View(shoppingCart);
+            return RedirectToAction(nameof(Index));
         }
 
-        // POST: ShoppingCarts/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult Remove(int cartID)
         {
-            if (_context.ShoppingCarts == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.ShoppingCarts'  is null.");
-            }
-            var shoppingCart = await _context.ShoppingCarts.FindAsync(id);
-            if (shoppingCart != null)
-            {
-                _context.ShoppingCarts.Remove(shoppingCart);
-            }
-            
-            await _context.SaveChangesAsync();
+            var cart = _context.ShoppingCarts.FirstOrDefault(x => x.Id == cartID);
+            _context.ShoppingCarts.Remove(cart);
+            _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ShoppingCartExists(int id)
         {
-          return (_context.ShoppingCarts?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.ShoppingCarts?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

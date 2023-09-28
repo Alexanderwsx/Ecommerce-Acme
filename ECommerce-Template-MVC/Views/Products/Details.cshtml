@@ -47,11 +47,22 @@
             @Html.DisplayFor(model => model.QuantiteEnStock)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageUrl)
-        </dd>
+            @Html.DisplayNameFor(model => model.Images)
+</dt>
+<dd class = "col-sm-10">
+            @if (Model?.Images != null && Model.Images.Any())
+            {
+                foreach (var productImage in Model.Images)
+                {
+                    <img src="@productImage.ImageUrl" alt="Product Image" class="img-fluid" style="max-width: 150px; margin-right: 10px;" />
+                }
+            }
+            else
+            {
+                <span>No images available for this product.</span>
+            }
+</dd>
+
     </dl>
 </div>
 <div>

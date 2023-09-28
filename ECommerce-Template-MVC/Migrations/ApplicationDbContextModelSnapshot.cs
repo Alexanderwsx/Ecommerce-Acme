@@ -237,9 +237,6 @@ namespace ECommerce_Template_MVC.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -257,6 +254,28 @@ namespace ECommerce_Template_MVC.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("ECommerce_Template_MVC.Models.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImage");
                 });
 
             modelBuilder.Entity("ECommerce_Template_MVC.Models.ShoppingCart", b =>
@@ -317,19 +336,19 @@ namespace ECommerce_Template_MVC.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "b960816b-995a-404f-a955-5276d360cd4b",
+                            Id = "35147e4f-31fe-4838-be45-a72fd5b75fcb",
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "b56f164e-9bd2-4be9-9c68-5b4f2be6ccb6",
+                            Id = "0fcfd3af-d560-4e35-b1e6-1c188dbea3c7",
                             Name = "User",
                             NormalizedName = "User"
                         },
                         new
                         {
-                            Id = "ee0c33cb-13c2-4866-9b01-a9fafaa7f24f",
+                            Id = "9ffce797-b17a-4906-96af-8e15df7d6d57",
                             Name = "Employe",
                             NormalizedName = "Employe"
                         });
@@ -471,6 +490,17 @@ namespace ECommerce_Template_MVC.Migrations
                     b.Navigation("ApplicationUser");
                 });
 
+            modelBuilder.Entity("ECommerce_Template_MVC.Models.ProductImage", b =>
+                {
+                    b.HasOne("ECommerce_Template_MVC.Models.Product", "Product")
+                        .WithMany("Images")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("ECommerce_Template_MVC.Models.ShoppingCart", b =>
                 {
                     b.HasOne("ECommerce_Template_MVC.Models.ApplicationUser", "ApplicationUser")
@@ -537,6 +567,11 @@ namespace ECommerce_Template_MVC.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ECommerce_Template_MVC.Models.Product", b =>
+                {
+                    b.Navigation("Images");
                 });
 #pragma warning restore 612, 618
         }
