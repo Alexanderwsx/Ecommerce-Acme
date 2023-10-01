@@ -73,6 +73,9 @@ namespace ECommerce_Template_MVC.Controllers
 
                         foreach (var item in localCartItems)
                         {
+                            //make a if to check if the product exist in db
+                            if(_context.Products.Find(item.ProductId) != null) { 
+
                             // Verificar si el producto ya existe en el carrito del usuario
                             var cartItem = _context.ShoppingCarts.FirstOrDefault(x => x.ProductId == item.ProductId && x.ApplicationUserId == user.Id);
                             if (cartItem != null)
@@ -90,6 +93,7 @@ namespace ECommerce_Template_MVC.Controllers
                                     ApplicationUserId = user.Id,
                                     Price = _context.Products.Find(item.ProductId).Price
                                 });
+                            }
                             }
                         }
 
