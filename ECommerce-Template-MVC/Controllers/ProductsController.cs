@@ -107,8 +107,7 @@ namespace ECommerce_Template_MVC.Controllers
             {
                 return NotFound();
             }
-
-            var product = await _context.Products.FindAsync(id);
+            var product = await _context.Products.Include(x => x.Images).FirstOrDefaultAsync(m => m.Id == id);
             if (product == null)
             {
                 return NotFound();
@@ -121,31 +120,31 @@ namespace ECommerce_Template_MVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Type,Brand,Price,QuantiteEnStock")] Product product)
+        public async Task<IActionResult> Edit(int id, Product product, IFormFile[] ImageFiles)
         {
             if (id != product.Id)
             {
                 return NotFound();
             }
-
             if (ModelState.IsValid)
             {
-                try
+                if (ImageFiles != null && ImageFiles.Any())
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ProductExists(product.Id))
+                    product.Images = new List<ProductImage>();
+                    foreach (var imageFile in ImageFiles)
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                        var filePath = Path.Combine(_hostEnvironment.WebRootPath, "images", fileName);
+                        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+                        product.Images.Add(new ProductImage { ImageUrl = "/images/" + fileName });
                     }
                 }
+                _context.Update(product);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
