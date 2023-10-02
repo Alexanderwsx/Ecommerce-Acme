@@ -31,6 +31,13 @@ function renderCart(cart) {
     htmlContent += '</table>';
     htmlContent += `<h3>Total General: ${total.toFixed(2)}</h3>`;
 
+    if (cart.length > 0) {
+        htmlContent += `<a class="btn btn-success">Récapitulatif de la commande</a>`;
+    } else {
+        htmlContent += `<h3>Le panier est vide</h3>`;
+    }
+  
+
     container.innerHTML = htmlContent;
 }
 

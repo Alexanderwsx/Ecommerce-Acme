@@ -26,40 +26,61 @@ namespace ECommerce_Template_MVC.Controllers
 
         // GET: ShoppingCarts
         public async Task<IActionResult> Index()
-        {          
+        {
             var cartItems = new List<ShoppingCart>();
 
             if (User.Identity.IsAuthenticated)
             {
-       
+
                 var claimsIdentity = (ClaimsIdentity)User.Identity;
                 var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
 
-                cartItems = _context.ShoppingCarts
-                    .Where(x => x.ApplicationUserId == claim.Value).Include(x => x.Product)
-                    .ToList();
+                ShoppingCartVM = new ShoppingCartVM()
+                {
+                    ListCart = await _context.ShoppingCarts.Include(x => x.Product).Where(x => x.ApplicationUserId == claim.Value).ToListAsync(),
+                    OrderHeader = new OrderHeader()
+                };
+                foreach (var cart in ShoppingCartVM.ListCart)
+                {
+                    ShoppingCartVM.OrderHeader.OrderTotal += (cart.Count * cart.Product.Price);
+                }
             }
-            var viewModel = new ShoppingCartVM
-            {
-                ListCart = cartItems
-            };
 
-            return View(viewModel);
+
+            return View(ShoppingCartVM);
         }
 
         public IActionResult Summary()
         {
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-            
 
-            return View();
+            ShoppingCartVM = new ShoppingCartVM()
+            {
+                ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.ApplicationUserId == claim.Value).ToList(),
+                OrderHeader = new OrderHeader()
+            };
+
+            ShoppingCartVM.OrderHeader.ApplicationUser = _context.ApplicationUsers.FirstOrDefault(x => x.Id == claim.Value);
+
+            ShoppingCartVM.OrderHeader.Nom = ShoppingCartVM.OrderHeader.ApplicationUser.Nom;
+            ShoppingCartVM.OrderHeader.Prenom = ShoppingCartVM.OrderHeader.ApplicationUser.Prenom;
+            ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.CodePostal;
+            ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
+            ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeader.ApplicationUser.Ville;
+            ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.Adresse;
+            
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Count * cart.Product.Price);
+            }
+            return View(ShoppingCartVM);
         }
 
         public IActionResult Plus(int cartID)
         {
             var cart = _context.ShoppingCarts.FirstOrDefault(x => x.Id == cartID);
-           
+
             int stock = _context.Products.FirstOrDefault(x => x.Id == cart.ProductId).QuantiteEnStock;
 
             if (cart.Count < stock)
