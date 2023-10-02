@@ -42,6 +42,14 @@
         </table>
 
         <h3>Total General: @Model.ListCart.Sum(x => x.Count * x.Price).ToString("C")</h3>
+        if(Model.ListCart.Count() > 0)
+        {
+            <a asp-action="Summary" class="btn btn-success">Récapitulatif de la commande</a>
+        }
+        else
+        {
+            <h3>Le panier est vide</h3>
+        }
     }
 </div>
 

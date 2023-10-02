@@ -9,33 +9,36 @@ using ECommerce_Template_MVC.Data;
 using ECommerce_Template_MVC.Models;
 using ECommerce_Template_MVC.Models.ViewModel;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace ECommerce_Template_MVC.Controllers
 {
     public class ShoppingCartsController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
 
-        public ShoppingCartsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        [BindProperty]
+        public ShoppingCartVM ShoppingCartVM { get; set; }
+        public ShoppingCartsController(ApplicationDbContext context)
         {
             _context = context;
-            _userManager = userManager;
         }
 
         // GET: ShoppingCarts
         public async Task<IActionResult> Index()
-        {
+        {          
             var cartItems = new List<ShoppingCart>();
 
             if (User.Identity.IsAuthenticated)
             {
-                var user = await _userManager.GetUserAsync(User);
+       
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+                var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
                 cartItems = _context.ShoppingCarts
-                    .Where(x => x.ApplicationUserId == user.Id).Include(x => x.Product)
+                    .Where(x => x.ApplicationUserId == claim.Value).Include(x => x.Product)
                     .ToList();
             }
-
             var viewModel = new ShoppingCartVM
             {
                 ListCart = cartItems
@@ -44,6 +47,14 @@ namespace ECommerce_Template_MVC.Controllers
             return View(viewModel);
         }
 
+        public IActionResult Summary()
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            
+
+            return View();
+        }
 
         public IActionResult Plus(int cartID)
         {
