@@ -146,7 +146,6 @@ namespace ECommerce_Template_MVC.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ApplicationUserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Carrier")
@@ -158,6 +157,9 @@ namespace ECommerce_Template_MVC.Migrations
 
                     b.Property<string>("Country")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Nom")
@@ -292,11 +294,17 @@ namespace ECommerce_Template_MVC.Migrations
                     b.Property<int>("Count")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsTemporary")
+                        .HasColumnType("bit");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
+
+                    b.Property<string>("TempCartId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -336,19 +344,19 @@ namespace ECommerce_Template_MVC.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "35147e4f-31fe-4838-be45-a72fd5b75fcb",
+                            Id = "c8280eb5-732a-43af-bb30-b7310a06ea68",
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "0fcfd3af-d560-4e35-b1e6-1c188dbea3c7",
+                            Id = "1ed4a7b2-89c5-4a7c-aedd-289a5d937609",
                             Name = "User",
                             NormalizedName = "User"
                         },
                         new
                         {
-                            Id = "9ffce797-b17a-4906-96af-8e15df7d6d57",
+                            Id = "9813861c-df1f-4e39-80d4-69837013127c",
                             Name = "Employe",
                             NormalizedName = "Employe"
                         });
@@ -483,9 +491,7 @@ namespace ECommerce_Template_MVC.Migrations
                 {
                     b.HasOne("ECommerce_Template_MVC.Models.ApplicationUser", "ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ApplicationUserId");
 
                     b.Navigation("ApplicationUser");
                 });

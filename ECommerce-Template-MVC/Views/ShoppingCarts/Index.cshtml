@@ -3,57 +3,51 @@
 <h2>Carrito de Compras</h2>
 
 <div id="cartItemsContainer">
-    @if (User.Identity.IsAuthenticated)
-    {
-        <table class="table">
-            <thead>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Productos</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListCart)
+            {
                 <tr>
-                    <th>Productos</th>
-                    <th>Cantidad</th>
-                    <th>Precio</th>
-                    <th>Total</th>
-                    <th></th>
+                    <td>@item.Product.Name</td>
+                    <td>
+                        <span class="product-count">@item.Count</span>
+                    </td>
+                    <td>@item.Price.ToString("C")</td>
+                    <td>@(item.Count * item.Price)</td>
+                    <td>
+                        <a asp-action="Plus" asp-route-cartId="@item.Id" class="btn btn-primary @(item.Count >= item.Product.QuantiteEnStock ? "disabled" : "")">
+                            <i class="bi bi-plus-square">+</i>
+                        </a> &nbsp;
+                        <a asp-action="Minus" asp-route-cartId="@item.Id" class="btn btn-warning">
+                            <i class="bi bi-dash-square">-</i>
+                        </a>
+                        <a asp-action="Remove" asp-route-cartId="@item.Id" class="btn btn-danger">
+                            <i class="bi bi-trash">Delete</i>
+                        </a>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.ListCart)
-                {
-                    <tr>
-                        <td>@item.Product.Name</td>
-                        <td>
-                            <span class="product-count">@item.Count</span>
-                        </td>
-                        <td>@item.Price.ToString("C")</td>
-                        <td>@(item.Count * item.Price)</td>
-                        <td>
-                            <a asp-action="Plus" asp-route-cartId="@item.Id" class="btn btn-primary @(item.Count >= item.Product.QuantiteEnStock ? "disabled" : "")">
-                                <i class="bi bi-plus-square">+</i>
-                            </a> &nbsp;
-                            <a asp-action="Minus" asp-route-cartId="@item.Id" class="btn btn-warning">
-                                <i class="bi bi-dash-square">-</i>
-                            </a>
-                            <a asp-action="Remove" asp-route-cartId="@item.Id" class="btn btn-danger">
-                                <i class="bi bi-trash">Delete</i>
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+            }
+        </tbody>
+    </table>
 
-        <h3>Total General: @Model.ListCart.Sum(x => x.Count * x.Price).ToString("C")</h3>
-        if(Model.ListCart.Count() > 0)
-        {
-            <a asp-action="Summary" class="btn btn-success">Récapitulatif de la commande</a>
-        }
-        else
-        {
-            <h3>Le panier est vide</h3>
-        }
+    <h3>Total General: @Model.ListCart.Sum(x => x.Count * x.Price).ToString("C")</h3>
+    @if (Model.ListCart.Count() > 0)
+    {
+        <a asp-action="Summary" class="btn btn-success">Récapitulatif de la commande</a>
     }
-</div>
+    else
+    {
+        <h3>Le panier est vide</h3>
+    }
 
-@if (!User.Identity.IsAuthenticated)
-{
-    <script src="~/js/ShowCartFromLocalStorage.js"></script>
-}
+</div>

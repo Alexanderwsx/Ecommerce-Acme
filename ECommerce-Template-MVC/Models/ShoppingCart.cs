@@ -22,5 +22,9 @@ namespace ECommerce_Template_MVC.Models
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Price { get; set; }
+
+        public bool IsTemporary { get; set; } = true;
+
+        public string ? TempCartId { get; set; }
     }
 }

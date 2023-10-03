@@ -7,11 +7,11 @@ namespace ECommerce_Template_MVC.Models
     public class OrderHeader
     {
         public int Id { get; set; }
-        public string ApplicationUserId { get; set; }
+        public string? ApplicationUserId { get; set; }
 
         [ForeignKey("ApplicationUserId")]
         [ValidateNever]
-        public ApplicationUser ApplicationUser { get; set; }
+        public ApplicationUser? ApplicationUser { get; set; }
 
         [Required]
         public DateTime OrderDate { get; set; }
@@ -27,6 +27,7 @@ namespace ECommerce_Template_MVC.Models
         public DateTime PaymentDueDate { get; set; }
         public string? SessionId { get; set; }
         public string? PaymentIntentId { get; set; }
+        public string? Email { get; set; }
 
         [Required]
         public string PhoneNumber { get; set; }

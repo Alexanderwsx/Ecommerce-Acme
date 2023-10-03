@@ -31,7 +31,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="ShoppingCarts" asp-action="Index">Cart</a>
                         </li>
                         <partial name="_LoginPartial" />
-
+                        @await Component.InvokeAsync("CartCount")
                     </ul>
                 </div>
             </div>

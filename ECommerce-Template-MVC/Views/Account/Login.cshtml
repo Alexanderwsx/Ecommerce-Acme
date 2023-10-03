@@ -31,7 +31,7 @@
                     </label>
                 </div>
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Se Connecter</button>
+                    <button asp-controller="Account" asp-action="Login" class="w-100 btn btn-lg btn-primary">Se Connecter</button>
                 </div>
 
                 <div class="pt-3" style="text-align: center;">
@@ -49,5 +49,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="~/js/addCartWhenLogin.js"></script>
 }

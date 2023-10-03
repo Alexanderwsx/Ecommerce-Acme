@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Stripe;
 
 namespace ECommerce_Template_MVC.Controllers
 {
@@ -56,69 +57,81 @@ namespace ECommerce_Template_MVC.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null, string localCart = null)
+        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             if (ModelState.IsValid)
             {
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    if (!string.IsNullOrEmpty(localCart) && localCart != "null")
+                    // Leer el carrito de compras de la cookie TempCartId
+                    var tempCartId = Request.Cookies["TempCartId"];
+                    if (!string.IsNullOrEmpty(tempCartId))
                     {
-                        // Deserializar el carrito de compras del localStorage
-                        var localCartItems = JsonConvert.DeserializeObject<List<ShoppingCart>>(localCart);
+                        var localCartItems = _context.ShoppingCarts.Where(sc => sc.TempCartId == tempCartId).ToList();
 
                         // Obtener el usuario actual
                         var user = await _userManager.FindByNameAsync(model.Email);
 
                         foreach (var item in localCartItems)
                         {
-                            //make a if to check if the product exist in db
-                            if(_context.Products.Find(item.ProductId) != null) { 
-
-                            // Verificar si el producto ya existe en el carrito del usuario
-                            var cartItem = _context.ShoppingCarts.FirstOrDefault(x => x.ProductId == item.ProductId && x.ApplicationUserId == user.Id);
-                            if (cartItem != null)
+                            if (_context.Products.Find(item.ProductId) != null)
                             {
-                                // Si el producto ya está en el carrito del usuario, suma la cantidad
-                                cartItem.Count += item.Count;
-                            }
-                            else
-                            {
-                                // Si el producto no está en el carrito del usuario, agrégalo
-                                _context.ShoppingCarts.Add(new ShoppingCart
+                                var cartItem = _context.ShoppingCarts.FirstOrDefault(x => x.ProductId == item.ProductId && x.ApplicationUserId == user.Id);
+                                if (cartItem != null)
                                 {
-                                    ProductId = item.ProductId,
-                                    Count = item.Count,
-                                    ApplicationUserId = user.Id,
-                                    Price = _context.Products.Find(item.ProductId).Price
-                                });
-                            }
+                                    // Si la cantidad total excede el stock, ajustar al stock máximo
+                                    if (cartItem.Count + item.Count > cartItem.Product.QuantiteEnStock)
+                                    {
+                                        cartItem.Count = cartItem.Product.QuantiteEnStock;
+                                    }
+                                    else
+                                    {
+                                        cartItem.Count += item.Count;
+                                    }
+                                }
+                                else
+                                {
+                                    _context.ShoppingCarts.Add(new ShoppingCart
+                                    {
+                                        ProductId = item.ProductId,
+                                        Count = item.Count,
+                                        ApplicationUserId = user.Id,
+                                        Price = _context.Products.Find(item.ProductId).Price,
+                                        IsTemporary = false
+                                    });
+                                }
+
+                                // Eliminar el carrito temporal
+                                _context.ShoppingCarts.Remove(item);
                             }
                         }
 
                         // Guardar los cambios en la base de datos
                         await _context.SaveChangesAsync();
+
+                        // Eliminar la cookie después de procesarla
+                        Response.Cookies.Delete("TempCartId");
                     }
 
-                    // Redireccionar al usuario
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     {
-                        return Json(new { success = true, redirectUrl = returnUrl });
+                        return Redirect(returnUrl);
                     }
                     else
                     {
-                        return Json(new { success = true, redirectUrl = Url.Action(nameof(HomeController.Index), "Home") });
+                        return RedirectToAction(nameof(HomeController.Index), "Home");
                     }
                 }
                 else
                 {
-                    return Json(new { success = false, message = "Intento de inicio de sesión no válido." });
+                    ModelState.AddModelError(string.Empty, "Intento de inicio de sesión no válido.");
+                    return View(model); // Devuelve la vista de inicio de sesión con el modelo y los errores
                 }
             }
-            // Si el modelo no es válido, puedes decidir qué hacer. Por ejemplo, podrías devolver un mensaje de error.
-            return Json(new { success = false, message = "Datos de inicio de sesión no válidos." });
+            return View(model); // Devuelve la vista de inicio de sesión con el modelo y los errores
         }
+
 
     }
 }

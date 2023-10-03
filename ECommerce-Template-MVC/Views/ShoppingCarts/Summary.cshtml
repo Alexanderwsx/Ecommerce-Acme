@@ -1,5 +1,4 @@
 ﻿@model ECommerce_Template_MVC.Models.ViewModel.ShoppingCartVM
-
 @*Lorsque l'application démarre, ASP.NET Core injecte une instance
 de IOptions<StripeSettings> dans la vue en utilisant l'injection
 	de dépendance. Cette instance peut ensuite être utilisée dans
@@ -32,6 +31,27 @@ de IOptions<StripeSettings> dans la vue en utilisant l'injection
                                     <span class="text-info">Shipping Details:</span>
                                 </h4>
                             </div>
+                            @if(!User.Identity.IsAuthenticated){
+                            <div class="row my-1">
+                                <div class="col-3">
+                                    <label>Email</label>
+                                </div>
+                                <div class="col-9">
+                                    <input asp-for="OrderHeader.Email" class="form-control" required />
+                                    <span asp-validation-for="OrderHeader.Email" class="text-danger"></span>
+                                </div>
+                            </div>
+                            }
+                         
+                            <div class="row my-1">
+                                <div class="col-3">
+                                    <label>Prenom</label>
+                                </div>
+                                <div class="col-9">
+                                    <input asp-for="OrderHeader.Prenom" class="form-control" required />
+                                    <span asp-validation-for="OrderHeader.Prenom" class="text-danger"></span>
+                                </div>
+                            </div>
                             <div class="row my-1">
                                 <div class="col-3">
                                     <label>Nom</label>
@@ -48,6 +68,15 @@ de IOptions<StripeSettings> dans la vue en utilisant l'injection
                                 <div class="col-9">
                                     <input asp-for="OrderHeader.PhoneNumber" class="form-control" required />
                                     <span asp-validation-for="OrderHeader.PhoneNumber" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="row my-1">
+                                <div class="col-3">
+                                    <label>Pays</label>
+                                </div>
+                                <div class="col-9">
+                                    <input asp-for="OrderHeader.Country" class="form-control" required />
+                                    <span asp-validation-for="OrderHeader.Country" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="row my-1">
@@ -128,3 +157,4 @@ de IOptions<StripeSettings> dans la vue en utilisant l'injection
         </div>
     </div>
 </form>
+
