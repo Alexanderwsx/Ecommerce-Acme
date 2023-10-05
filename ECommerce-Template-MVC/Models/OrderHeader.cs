@@ -18,6 +18,9 @@ namespace ECommerce_Template_MVC.Models
         public DateTime ShippingDate { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
+        public decimal ShippingAmount { get; set;}
+
+        [Column(TypeName = "decimal(18, 2)")]
         public decimal OrderTotal { get; set; }
         public string? OrderStatus { get; set; }
         public string? PaymentStatus { get; set; }

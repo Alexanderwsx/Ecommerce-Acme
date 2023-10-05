@@ -33,6 +33,27 @@ namespace ECommerce_Template_MVC.Models
         [DisplayName("Quantite en Stock")]
         public int QuantiteEnStock { get; set; }
 
+        //Shipping info
+        [Required]
+        [DisplayName("Poids (en grammes)")]
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Weight { get; set; }
+
+        [Required]
+        [DisplayName("Hauteur (en cm)")]
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Height { get; set; }
+
+        [Required]
+        [DisplayName("Largeur (en cm)")]
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Width { get; set; }
+
+        [Required]
+        [DisplayName("Longueur")]
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Length { get; set; }
+
         [ValidateNever]
         public List<ProductImage> Images { get; set; }
         [ValidateNever]

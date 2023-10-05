@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce-Template-MVC", "ECommerce-Template-MVC\ECommerce-Template-MVC.csproj", "{12213718-D0C8-49E0-ABC7-6B3E02DAC601}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECommerce-Template-MVC", "ECommerce-Template-MVC\ECommerce-Template-MVC.csproj", "{12213718-D0C8-49E0-ABC7-6B3E02DAC601}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce-Template-MVCTests", "ECommerce-Template-MVCTests\ECommerce-Template-MVCTests.csproj", "{10736723-0F09-4739-B53A-C2507F5D61EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{12213718-D0C8-49E0-ABC7-6B3E02DAC601}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12213718-D0C8-49E0-ABC7-6B3E02DAC601}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12213718-D0C8-49E0-ABC7-6B3E02DAC601}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10736723-0F09-4739-B53A-C2507F5D61EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10736723-0F09-4739-B53A-C2507F5D61EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10736723-0F09-4739-B53A-C2507F5D61EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10736723-0F09-4739-B53A-C2507F5D61EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

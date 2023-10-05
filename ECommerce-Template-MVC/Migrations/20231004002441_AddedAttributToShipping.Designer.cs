@@ -4,6 +4,7 @@ using ECommerce_Template_MVC.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce_Template_MVC.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231004002441_AddedAttributToShipping")]
+    partial class AddedAttributToShipping
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,9 +205,6 @@ namespace ECommerce_Template_MVC.Migrations
                     b.Property<string>("SessionId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("ShippingAmount")
-                        .HasColumnType("decimal(18, 2)");
-
                     b.Property<DateTime>("ShippingDate")
                         .HasColumnType("datetime2");
 
@@ -359,19 +359,19 @@ namespace ECommerce_Template_MVC.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "b8585294-bbae-4986-8d3e-064d34590617",
+                            Id = "38126ab7-aa88-4a9f-8885-c797a369174e",
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "715afd5d-fe01-4afe-bd74-dd9bd2227a78",
+                            Id = "1ea1f443-97f4-4dc9-b330-e84497a95733",
                             Name = "User",
                             NormalizedName = "User"
                         },
                         new
                         {
-                            Id = "41d5b512-4a7e-4e63-9437-1cbea4875acd",
+                            Id = "ce6f11b0-3940-4e5d-a874-381e9a64f9b7",
                             Name = "Employe",
                             NormalizedName = "Employe"
                         });
