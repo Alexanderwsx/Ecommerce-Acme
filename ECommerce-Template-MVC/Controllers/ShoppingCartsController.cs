@@ -350,6 +350,7 @@ namespace ECommerce_Template_MVC.Controllers
         public IActionResult SummaryPOST()
         {
             APIResource resource = new APIResource(_shippoSettings.Value.ShippoAPIKey);
+            Shipment shipment;
 
             if (User.Identity.IsAuthenticated)
             {
@@ -380,7 +381,7 @@ namespace ECommerce_Template_MVC.Controllers
 
             try
             {
-                Shipment shipment = CreateShipment(ShoppingCartVM);
+                shipment = CreateShipment(ShoppingCartVM);
                 Rate rate = shipment.Rates[0]; // Utiliza el primer rate (tarifa) disponible
 
                 decimal shippingCost;
@@ -483,6 +484,25 @@ namespace ECommerce_Template_MVC.Controllers
             order.PaymentIntentId = session.PaymentIntentId;
             order.SessionId = session.Id;
             order.PaymentDate = DateTime.Now;
+
+            //Shippo transaction
+            Transaction transaction = resource.CreateTransaction(new Hashtable
+            {
+                { "rate", shipment.Rates[0].ObjectId },
+                { "label_file_type", "PDF" },
+                { "async", false }
+            });
+
+            if (transaction.Status.Equals("SUCCESS"))
+            {
+                order.TrackingNumber = transaction.TrackingNumber.ToString();
+                order.Carrier = shipment.Rates[0].Provider.ToString();
+            }
+            else
+            {
+                // Aquí puedes manejar el caso en el que la transacción falla.
+                // Por ejemplo, podrías registrar un error.
+            }
 
             if (!User.Identity.IsAuthenticated)
             {
