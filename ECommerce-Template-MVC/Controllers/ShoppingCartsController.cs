@@ -24,6 +24,7 @@ using Product = ECommerce_Template_MVC.Models.Product;
 using System.Collections;
 using Humanizer.Localisation;
 using Elfie.Serialization;
+using Newtonsoft.Json;
 
 namespace ECommerce_Template_MVC.Controllers
 {
@@ -118,6 +119,43 @@ namespace ECommerce_Template_MVC.Controllers
             catch (Exception ex)
             {
                 throw new Exception("Error al crear el envío con Shippo: " + ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAddressSuggestions(string query)
+        {
+            // Crea un objeto de dirección basado en la consulta
+            var address = new
+            {
+                name = "Example Name", // Puedes reemplazar esto con un nombre real si lo tienes
+                street1 = query,
+                city = "", // Puedes agregar la ciudad si la tienes
+                state = "", // Puedes agregar el estado si lo tienes
+                zip = "", // Puedes agregar el código postal si lo tienes
+                country = "US", // Puedes cambiar el país si es necesario
+                validate = true
+            };
+
+            // Llama a la API de Shippo para validar la dirección
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Authorization", $"ShippoToken {_shippoSettings.Value.ShippoAPIKey}");
+            var response = await client.PostAsJsonAsync("https://api.goshippo.com/addresses/", address);
+
+            string content = await response.Content.ReadAsStringAsync();
+            var responseData = JsonConvert.DeserializeObject<dynamic>(content);
+
+            // Verifica si la dirección es válida
+            bool isValid = responseData.validation_results.is_valid;
+            if (isValid)
+            {
+                // Si es válida, devuelve la dirección sugerida
+                return Json(new { isValid = true, address = responseData });
+            }
+            else
+            {
+                // Si no es válida, devuelve los mensajes de error
+                return Json(new { isValid = false, messages = responseData.validation_results.messages });
             }
         }
 
