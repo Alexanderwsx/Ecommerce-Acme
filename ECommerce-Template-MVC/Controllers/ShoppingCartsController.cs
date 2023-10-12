@@ -25,6 +25,7 @@ using System.Collections;
 using Humanizer.Localisation;
 using Elfie.Serialization;
 using Newtonsoft.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ECommerce_Template_MVC.Controllers
 {
@@ -44,7 +45,138 @@ namespace ECommerce_Template_MVC.Controllers
         [BindProperty]
         public ShoppingCartVM ShoppingCartVM { get; set; }
 
-        public Shipment CreateShipment(ShoppingCartVM cartVM)
+        [HttpGet]
+        public IActionResult Checkout()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+                var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
+                ShoppingCartVM = new ShoppingCartVM()
+                {
+                    ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.ApplicationUserId == claim.Value).ToList(),
+                    OrderHeader = new OrderHeader()
+                };
+
+                ShoppingCartVM.OrderHeader.ApplicationUser = _context.ApplicationUsers.FirstOrDefault(x => x.Id == claim.Value);
+
+                if (ShoppingCartVM.OrderHeader.ApplicationUser != null)
+                {
+                    ShoppingCartVM.OrderHeader.Nom = ShoppingCartVM.OrderHeader.ApplicationUser.Nom;
+                    ShoppingCartVM.OrderHeader.Prenom = ShoppingCartVM.OrderHeader.ApplicationUser.Prenom;
+                    ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.CodePostal;
+                    ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
+                    ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeader.ApplicationUser.Ville;
+                    ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.Adresse;
+                    ShoppingCartVM.OrderHeader.Country = ShoppingCartVM.OrderHeader.ApplicationUser.Pays;
+                    ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeader.ApplicationUser.Province;
+                }
+            }
+            else
+            {
+                var tempCartId = Request.Cookies["TempCartId"];
+                if (string.IsNullOrEmpty(tempCartId))
+                {
+                    // No hay carrito para procesar
+                    return RedirectToAction("Index", "Home");
+                }
+
+                ShoppingCartVM = new ShoppingCartVM()
+                {
+                    ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.TempCartId == tempCartId).ToList(),
+                    OrderHeader = new OrderHeader()
+                };
+            }
+
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Count * cart.Product.Price);
+            }
+            return View(ShoppingCartVM);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ActionName("Checkout")]
+        public IActionResult CheckoutPOST()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+                var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+                ShoppingCartVM.ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.ApplicationUserId == claim.Value).ToList();
+                ShoppingCartVM.OrderHeader.ApplicationUserId = claim.Value;
+            }
+            else
+            {
+                var tempCartId = Request.Cookies["TempCartId"];
+                if (string.IsNullOrEmpty(tempCartId))
+                {
+                    //No hay carrito para procesar
+                    return RedirectToAction("Index", "Home");
+                }
+                ShoppingCartVM.ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.TempCartId == tempCartId).ToList();
+            }
+
+            ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+
+            ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusPending;
+            ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusPending;
+            _context.OrderHeaders.Add(ShoppingCartVM.OrderHeader);
+            _context.SaveChanges();
+
+            //prix
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                cart.Price = cart.Product.Price;
+                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Count * cart.Product.Price);
+
+                OrderDetail orderDetails = new OrderDetail
+                {
+                    ProductId = cart.ProductId,
+                    OrderId = ShoppingCartVM.OrderHeader.Id,
+                    Price = cart.Product.Price,
+                    Count = cart.Count
+                };
+                _context.OrderDetails.Add(orderDetails);         
+            }        
+
+            _context.SaveChanges();
+            return RedirectToAction("SelectShipping", "ShoppingCarts", new { id = ShoppingCartVM.OrderHeader.Id });
+        }
+
+        [HttpGet]
+        public IActionResult SelectShipping(int id)
+        {
+            var orderHeader = _context.OrderHeaders.FirstOrDefault(x => x.Id == id);
+
+            if (orderHeader == null)
+            {
+                return NotFound();
+            }
+
+            Shipment shipment;
+            try
+            {
+                  shipment = CreateShipment(orderHeader);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Hubo un error al generar las opciones de envío. Por favor intenta de nuevo.");
+                return View("Error"); // Asume que tienes una vista "Error" para manejar estos casos.
+
+            }
+
+            var rates = shipment.Rates;
+            
+
+            return View(rates);
+        }   
+
+
+
+        public Shipment CreateShipment(OrderHeader orderHeader)
         {
             APIResource resource = new APIResource(_shippoSettings.Value.ShippoAPIKey);
 
@@ -67,25 +199,29 @@ namespace ECommerce_Template_MVC.Controllers
             Address addressTo = new Address
             {
                 // ... (basado en cartVM.OrderHeader, rellena los detalles de la dirección del cliente)
-                Name = cartVM.OrderHeader.Nom + " " + cartVM.OrderHeader.Prenom,
-                Street1 = "2920 Zoo Drive",
-                City = "San Diego",
-                State = "CA",
-                Zip = "92101",
-                Country = "US",
-                Phone = cartVM.OrderHeader.PhoneNumber,
-                Email = cartVM.OrderHeader.Email
+                Name = orderHeader.Nom + " " + orderHeader.Prenom,
+                Street1 = "5450 Jean talon est",
+                City = "Saint Leonard",
+                State = "QB",
+                Zip = "H1S 1L6",
+                Country = "CA",
+                Phone = orderHeader.PhoneNumber,
+                Email = orderHeader.Email
             };
 
             // Crear una lista de Product basada en los elementos del carrito
             List<Product> products = new List<Product>();
-            foreach (var cartItem in cartVM.ListCart)
+
+            List<OrderDetail> orderDetails = _context.OrderDetails.Where(x => x.OrderId == orderHeader.Id).Include(x => x.Product).ToList();
+
+            foreach (var orderDetail in orderDetails)
             {
-                for (int i = 0; i < cartItem.Count; i++) // Considerar la cantidad de cada producto
+                for (int i = 0; i < orderDetail.Count; i++) // Considerar la cantidad de cada producto
                 {
-                    products.Add(cartItem.Product);
+                    products.Add(orderDetail.Product);
                 }
             }
+         
             var boxes = Box.DetermineSuitableBoxes(products);
             List<Parcel> parcels = new List<Parcel>();
 
@@ -103,8 +239,7 @@ namespace ECommerce_Template_MVC.Controllers
                 parcels.Add(parcel);
             }
 
-            try
-            {
+         
                 // Crear el envío usando Shippo
                 Shipment shipment = resource.CreateShipment(new Hashtable
                  {
@@ -115,49 +250,45 @@ namespace ECommerce_Template_MVC.Controllers
                  });
 
                 return shipment;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error al crear el envío con Shippo: " + ex.Message);
-            }
+         
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAddressSuggestions(string query)
-        {
-            // Crea un objeto de dirección basado en la consulta
-            var address = new
-            {
-                name = "Example Name", // Puedes reemplazar esto con un nombre real si lo tienes
-                street1 = query,
-                city = "", // Puedes agregar la ciudad si la tienes
-                state = "", // Puedes agregar el estado si lo tienes
-                zip = "", // Puedes agregar el código postal si lo tienes
-                country = "US", // Puedes cambiar el país si es necesario
-                validate = true
-            };
+        //[HttpGet]
+        //public async Task<IActionResult> GetAddressSuggestions(string query)
+        //{
+        //    // Crea un objeto de dirección basado en la consulta
+        //    var address = new
+        //    {
+        //        name = "Example Name", // Puedes reemplazar esto con un nombre real si lo tienes
+        //        street1 = query,
+        //        city = "", // Puedes agregar la ciudad si la tienes
+        //        state = "", // Puedes agregar el estado si lo tienes
+        //        zip = "", // Puedes agregar el código postal si lo tienes
+        //        country = "US", // Puedes cambiar el país si es necesario
+        //        validate = true
+        //    };
 
-            // Llama a la API de Shippo para validar la dirección
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Authorization", $"ShippoToken {_shippoSettings.Value.ShippoAPIKey}");
-            var response = await client.PostAsJsonAsync("https://api.goshippo.com/addresses/", address);
+        //    // Llama a la API de Shippo para validar la dirección
+        //    var client = new HttpClient();
+        //    client.DefaultRequestHeaders.Add("Authorization", $"ShippoToken {_shippoSettings.Value.ShippoAPIKey}");
+        //    var response = await client.PostAsJsonAsync("https://api.goshippo.com/addresses/", address);
 
-            string content = await response.Content.ReadAsStringAsync();
-            var responseData = JsonConvert.DeserializeObject<dynamic>(content);
+        //    string content = await response.Content.ReadAsStringAsync();
+        //    var responseData = JsonConvert.DeserializeObject<dynamic>(content);
 
-            // Verifica si la dirección es válida
-            bool isValid = responseData.validation_results.is_valid;
-            if (isValid)
-            {
-                // Si es válida, devuelve la dirección sugerida
-                return Json(new { isValid = true, address = responseData });
-            }
-            else
-            {
-                // Si no es válida, devuelve los mensajes de error
-                return Json(new { isValid = false, messages = responseData.validation_results.messages });
-            }
-        }
+        //    // Verifica si la dirección es válida
+        //    bool isValid = responseData.validation_results.is_valid;
+        //    if (isValid)
+        //    {
+        //        // Si es válida, devuelve la dirección sugerida
+        //        return Json(new { isValid = true, address = responseData });
+        //    }
+        //    else
+        //    {
+        //        // Si no es válida, devuelve los mensajes de error
+        //        return Json(new { isValid = false, messages = responseData.validation_results.messages });
+        //    }
+        //}
 
         // GET: ShoppingCarts
         public async Task<IActionResult> Index()
@@ -382,175 +513,175 @@ namespace ECommerce_Template_MVC.Controllers
             return View(ShoppingCartVM);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [ActionName("Summary")]
-        public IActionResult SummaryPOST()
-        {
-            APIResource resource = new APIResource(_shippoSettings.Value.ShippoAPIKey);
-            Shipment shipment;
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //[ActionName("Summary")]
+        //public IActionResult SummaryPOST()
+        //{
+        //    APIResource resource = new APIResource(_shippoSettings.Value.ShippoAPIKey);
+        //    Shipment shipment;
 
-            if (User.Identity.IsAuthenticated)
-            {
-                var claimsIdentity = (ClaimsIdentity)User.Identity;
-                var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-                ShoppingCartVM.ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.ApplicationUserId == claim.Value).ToList();
-                ShoppingCartVM.OrderHeader.ApplicationUserId = claim.Value;
-            }
-            else
-            {
-                var tempCartId = Request.Cookies["TempCartId"];
-                if (string.IsNullOrEmpty(tempCartId))
-                {
-                    // No hay carrito para procesar
-                    return RedirectToAction("Index", "Home");
-                }
-                ShoppingCartVM.ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.TempCartId == tempCartId).ToList();
-            }
+        //    if (User.Identity.IsAuthenticated)
+        //    {
+        //        var claimsIdentity = (ClaimsIdentity)User.Identity;
+        //        var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+        //        ShoppingCartVM.ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.ApplicationUserId == claim.Value).ToList();
+        //        ShoppingCartVM.OrderHeader.ApplicationUserId = claim.Value;
+        //    }
+        //    else
+        //    {
+        //        var tempCartId = Request.Cookies["TempCartId"];
+        //        if (string.IsNullOrEmpty(tempCartId))
+        //        {
+        //            //No hay carrito para procesar
+        //            return RedirectToAction("Index", "Home");
+        //        }
+        //        ShoppingCartVM.ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.TempCartId == tempCartId).ToList();
+        //    }
 
-            ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+        //    ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
 
-            //prix
-            foreach (var cart in ShoppingCartVM.ListCart)
-            {
-                cart.Price = cart.Product.Price;
-                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Count * cart.Product.Price);
-            }
+        //    //prix
+        //    foreach (var cart in ShoppingCartVM.ListCart)
+        //    {
+        //        cart.Price = cart.Product.Price;
+        //        ShoppingCartVM.OrderHeader.OrderTotal += (cart.Count * cart.Product.Price);
+        //    }
 
-            try
-            {
-                shipment = CreateShipment(ShoppingCartVM);
-                Rate rate = shipment.Rates[0]; // Utiliza el primer rate (tarifa) disponible
+        //    try
+        //    {
+        //        shipment = CreateShipment(ShoppingCartVM);
+        //        Rate rate = shipment.Rates[0]; // Utiliza el primer rate (tarifa) disponible
 
-                decimal shippingCost;
+        //        decimal shippingCost;
 
-                try
-                {
-                    shippingCost = Convert.ToDecimal(rate.Amount.ToString());
-                    ShoppingCartVM.OrderHeader.OrderTotal += shippingCost;
-                    ShoppingCartVM.OrderHeader.ShippingAmount = shippingCost;
-                }
-                catch (Exception ex)
-                {
-                    // Añade manejo del error aquí si la conversión falla.
-                    ModelState.AddModelError("", "Hubo un error al calcular el costo de envío. Por favor intenta de nuevo.");
-                    return View(ShoppingCartVM);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Maneja el error. Por ejemplo, mostrar un mensaje al usuario sobre el problema con el cálculo del envío.
-                ModelState.AddModelError("", "Hubo un error al calcular el costo de envío. Por favor intenta de nuevo.");
-                return View(ShoppingCartVM);
-            }
+        //        try
+        //        {
+        //            shippingCost = Convert.ToDecimal(rate.Amount.ToString());
+        //            ShoppingCartVM.OrderHeader.OrderTotal += shippingCost;
+        //            ShoppingCartVM.OrderHeader.ShippingAmount = shippingCost;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            // Añade manejo del error aquí si la conversión falla.
+        //            ModelState.AddModelError("", "Hubo un error al calcular el costo de envío. Por favor intenta de nuevo.");
+        //            return View(ShoppingCartVM);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Maneja el error. Por ejemplo, mostrar un mensaje al usuario sobre el problema con el cálculo del envío.
+        //        ModelState.AddModelError("", "Hubo un error al calcular el costo de envío. Por favor intenta de nuevo.");
+        //        return View(ShoppingCartVM);
+        //    }
 
-            ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusPending;
-            ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusPending;
-            _context.OrderHeaders.Add(ShoppingCartVM.OrderHeader);
-            _context.SaveChanges();
+        //    ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusPending;
+        //    ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusPending;
+        //    _context.OrderHeaders.Add(ShoppingCartVM.OrderHeader);
+        //    _context.SaveChanges();
 
-            foreach (var cart in ShoppingCartVM.ListCart)
-            {
-                OrderDetail orderDetails = new OrderDetail
-                {
-                    ProductId = cart.ProductId,
-                    OrderId = ShoppingCartVM.OrderHeader.Id,
-                    Price = cart.Product.Price,
-                    Count = cart.Count
-                };
-                _context.OrderDetails.Add(orderDetails);
-                _context.SaveChanges();
-            }
+        //    foreach (var cart in ShoppingCartVM.ListCart)
+        //    {
+        //        OrderDetail orderDetails = new OrderDetail
+        //        {
+        //            ProductId = cart.ProductId,
+        //            OrderId = ShoppingCartVM.OrderHeader.Id,
+        //            Price = cart.Product.Price,
+        //            Count = cart.Count
+        //        };
+        //        _context.OrderDetails.Add(orderDetails);
+        //        _context.SaveChanges();
+        //    }
 
-            //stripe settings/checkout
+        //    //stripe settings/checkout
 
-            var domain = "https://localhost:44316/";
-            var options = new SessionCreateOptions
-            {
-                PaymentMethodTypes = new List<string>
-                {
-                    "card",
-                },
-                LineItems = new List<SessionLineItemOptions>(),
+        //    var domain = "https://localhost:44316/";
+        //    var options = new SessionCreateOptions
+        //    {
+        //        PaymentMethodTypes = new List<string>
+        //        {
+        //            "card",
+        //        },
+        //        LineItems = new List<SessionLineItemOptions>(),
 
-                AutomaticTax = new SessionAutomaticTaxOptions
-                {
-                    Enabled = true,
-                },
-                Mode = "payment",
-                SuccessUrl = domain + $"ShoppingCarts/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
-                CancelUrl = domain + $"ShoppingCarts/Summary",
-            };
+        //        AutomaticTax = new SessionAutomaticTaxOptions
+        //        {
+        //            Enabled = true,
+        //        },
+        //        Mode = "payment",
+        //        SuccessUrl = domain + $"ShoppingCarts/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+        //        CancelUrl = domain + $"ShoppingCarts/Summary",
+        //    };
 
-            foreach (var item in ShoppingCartVM.ListCart)
-            {
-                var sessionLineItem = new SessionLineItemOptions
-                {
-                    PriceData = new SessionLineItemPriceDataOptions
-                    {
-                        UnitAmount = (long)(item.Product.Price * 100),
-                        Currency = "CAD",
-                        ProductData = new SessionLineItemPriceDataProductDataOptions
-                        {
-                            Name = item.Product.Name,
-                        },
-                    },
-                    Quantity = item.Count,
-                };
-                options.LineItems.Add(sessionLineItem);
-            }
+        //    foreach (var item in ShoppingCartVM.ListCart)
+        //    {
+        //        var sessionLineItem = new SessionLineItemOptions
+        //        {
+        //            PriceData = new SessionLineItemPriceDataOptions
+        //            {
+        //                UnitAmount = (long)(item.Product.Price * 100),
+        //                Currency = "CAD",
+        //                ProductData = new SessionLineItemPriceDataProductDataOptions
+        //                {
+        //                    Name = item.Product.Name,
+        //                },
+        //            },
+        //            Quantity = item.Count,
+        //        };
+        //        options.LineItems.Add(sessionLineItem);
+        //    }
 
-            //Ajoute couts livraison au stripe
-            var shippingCostLineItem = new SessionLineItemOptions
-            {
-                PriceData = new SessionLineItemPriceDataOptions
-                {
-                    UnitAmount = (long)(ShoppingCartVM.OrderHeader.ShippingAmount * 100), // convierte el precio a centavos
-                    Currency = "CAD",
-                    ProductData = new SessionLineItemPriceDataProductDataOptions
-                    {
-                        Name = "Livraison",
-                    },
-                },
-                Quantity = 1,
-            };
-            options.LineItems.Add(shippingCostLineItem);
+        //    //Ajoute couts livraison au stripe
+        //    var shippingCostLineItem = new SessionLineItemOptions
+        //    {
+        //        PriceData = new SessionLineItemPriceDataOptions
+        //        {
+        //            UnitAmount = (long)(ShoppingCartVM.OrderHeader.ShippingAmount * 100), // convierte el precio a centavos
+        //            Currency = "CAD",
+        //            ProductData = new SessionLineItemPriceDataProductDataOptions
+        //            {
+        //                Name = "Livraison",
+        //            },
+        //        },
+        //        Quantity = 1,
+        //    };
+        //    options.LineItems.Add(shippingCostLineItem);
 
-            var service = new SessionService();
-            Session session = service.Create(options);
-            var order = _context.OrderHeaders.FirstOrDefault(x => x.Id == ShoppingCartVM.OrderHeader.Id);
-            order.PaymentIntentId = session.PaymentIntentId;
-            order.SessionId = session.Id;
-            order.PaymentDate = DateTime.Now;
+        //    var service = new SessionService();
+        //    Session session = service.Create(options);
+        //    var order = _context.OrderHeaders.FirstOrDefault(x => x.Id == ShoppingCartVM.OrderHeader.Id);
+        //    order.PaymentIntentId = session.PaymentIntentId;
+        //    order.SessionId = session.Id;
+        //    order.PaymentDate = DateTime.Now;
 
-            //Shippo transaction
-            Transaction transaction = resource.CreateTransaction(new Hashtable
-            {
-                { "rate", shipment.Rates[0].ObjectId },
-                { "label_file_type", "PDF" },
-                { "async", false }
-            });
+        //    //Shippo transaction
+        //    Transaction transaction = resource.CreateTransaction(new Hashtable
+        //    {
+        //        { "rate", shipment.Rates[0].ObjectId },
+        //        { "label_file_type", "PDF" },
+        //        { "async", false }
+        //    });
 
-            if (transaction.Status.Equals("SUCCESS"))
-            {
-                order.TrackingNumber = transaction.TrackingNumber.ToString();
-                order.Carrier = shipment.Rates[0].Provider.ToString();
-            }
-            else
-            {
-                // Aquí puedes manejar el caso en el que la transacción falla.
-                // Por ejemplo, podrías registrar un error.
-            }
+        //    if (transaction.Status.Equals("SUCCESS"))
+        //    {
+        //        order.TrackingNumber = transaction.TrackingNumber.ToString();
+        //        order.Carrier = shipment.Rates[0].Provider.ToString();
+        //    }
+        //    else
+        //    {
+        //        // Aquí puedes manejar el caso en el que la transacción falla.
+        //        // Por ejemplo, podrías registrar un error.
+        //    }
 
-            if (!User.Identity.IsAuthenticated)
-            {
-                order.Email = ShoppingCartVM.OrderHeader.Email;
-            }
+        //    if (!User.Identity.IsAuthenticated)
+        //    {
+        //        order.Email = ShoppingCartVM.OrderHeader.Email;
+        //    }
 
-            _context.SaveChanges();
-            Response.Headers.Add("Location", session.Url);
-            return new StatusCodeResult(303);
-        }
+        //    _context.SaveChanges();
+        //    Response.Headers.Add("Location", session.Url);
+        //    return new StatusCodeResult(303);
+        //}
 
         private bool ShoppingCartExists(int id)
         {

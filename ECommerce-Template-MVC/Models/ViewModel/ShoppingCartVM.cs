@@ -1,4 +1,6 @@
-﻿namespace ECommerce_Template_MVC.Models.ViewModel
+﻿using Shippo;
+
+namespace ECommerce_Template_MVC.Models.ViewModel
 {
     public class ShoppingCartVM
     {

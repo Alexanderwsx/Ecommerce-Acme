@@ -33,18 +33,7 @@ de IOptions<StripeSettings> dans la vue en utilisant l'injection
                                     <span class="text-info">Shipping Details:</span>
                                 </h4>
                             </div>
-                            @if (!User.Identity.IsAuthenticated)
-                            {
-                                <div class="row my-1">
-                                    <div class="col-3">
-                                        <label>Email</label>
-                                    </div>
-                                    <div class="col-9">
-                                        <input asp-for="OrderHeader.Email" class="form-control" required />
-                                        <span asp-validation-for="OrderHeader.Email" class="text-danger"></span>
-                                    </div>
-                                </div>
-                            }
+                           
 
                             <div class="row my-1">
                                 <div class="col-3">
@@ -123,22 +112,7 @@ de IOptions<StripeSettings> dans la vue en utilisant l'injection
                             <h4 class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="text-info">Récapitulatif de la commande:</span>
                             </h4>
-                            <ul class="list-group mb-3">
-                                @foreach (var details in Model.ListCart)
-                                {
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <div>
-                                            <h6 class="my-0">@details.Product.Name</h6>
-                                            <small class="text-muted">Quantity: @details.Count</small>
-                                        </div>
-                                        <span class="text-muted">@((details.Product.Price * details.Count).ToString("c")) </span>
-                                    </li>
-                                }
-                                <li class="list-group-item d-flex justify-content-between bg-light">
-                                    <small class="text-info">Total (CAD)</small>
-                                    <strong class="text-info">@Model.OrderHeader.OrderTotal.ToString("c")</strong>
-                                </li>
-                            </ul>
+                          
                         </div>
                     </div>
                 </div>

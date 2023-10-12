@@ -1,0 +1,22 @@
+﻿@model IEnumerable<Shippo.Rate>
+
+<h2>Select a Shipping Option</h2>
+
+<form method="post" action="ConfirmShipping">
+    @foreach (var rate in Model)
+    {
+        <div class="shipping-option">
+            <input type="radio" name="selectedRate" value="@rate.ObjectId" />
+            <span class="provider">@rate.Provider</span>
+            <span class="price">$@rate.Amount</span>
+            <span class="service-name">@rate.Servicelevel.Name</span>
+       
+        
+                <span class="estimated-days">~ @rate.EstimatedDays días - @(int.Parse(rate.EstimatedDays.ToString()) +2) dias</span>
+      
+            <span class="description">@rate.DurationTerms</span>
+        </div>
+    }
+
+    <input type="submit" value="Confirm Shipping Option" />
+</form>
