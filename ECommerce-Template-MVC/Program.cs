@@ -40,13 +40,17 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromSeconds(100);
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
 
 //Ajouter les services de l'API Shippo
 builder.Services.Configure<ShippoSettings>(builder.Configuration.GetSection("Shippo"));
+
+
+
+
 
 var app = builder.Build();
 
@@ -72,6 +76,7 @@ StripeConfiguration.ApiKey = app.Configuration.GetSection("Stripe:SecretKey").Ge
 
 app.UseAuthorization();
 app.MapRazorPages(); //permet l'utilisation de razorpage
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

@@ -26,6 +26,7 @@ using Humanizer.Localisation;
 using Elfie.Serialization;
 using Newtonsoft.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Threading.Tasks.Sources;
 
 namespace ECommerce_Template_MVC.Controllers
 {
@@ -139,8 +140,8 @@ namespace ECommerce_Template_MVC.Controllers
                     Price = cart.Product.Price,
                     Count = cart.Count
                 };
-                _context.OrderDetails.Add(orderDetails);         
-            }        
+                _context.OrderDetails.Add(orderDetails);
+            }
 
             _context.SaveChanges();
             return RedirectToAction("SelectShipping", "ShoppingCarts", new { id = ShoppingCartVM.OrderHeader.Id });
@@ -159,7 +160,9 @@ namespace ECommerce_Template_MVC.Controllers
             Shipment shipment;
             try
             {
-                  shipment = CreateShipment(orderHeader);
+                shipment = CreateShipment(orderHeader);
+                HttpContext.Session.SetString("Shipment", JsonConvert.SerializeObject(shipment.ObjectId));
+
             }
             catch (Exception ex)
             {
@@ -168,12 +171,198 @@ namespace ECommerce_Template_MVC.Controllers
 
             }
 
-            var rates = shipment.Rates;
-            
+            //if(shipment.Rates.Count() > 1)
+            //{
+            //    if (shipment.Rates[0].EstimatedDays != shipment.Rates[1].EstimatedDays) { 
+
+            //    }
+            //}
+
+            var rates = shipment.Rates.OrderBy(p => p.Amount);
+            ViewBag.OrderId = id;
+
 
             return View(rates);
-        }   
+        }
 
+        [HttpPost]
+        public IActionResult SelectShipping(int id, string selectedRate)
+        {
+            APIResource resource = new APIResource(_shippoSettings.Value.ShippoAPIKey);
+            //retrieve id de session
+            var shipmentId = HttpContext.Session.GetString("Shipment");
+            var shipment = resource.RetrieveShipment(shipmentId.Trim('"'));
+            var rate = shipment.Rates.FirstOrDefault(x => x.ObjectId == selectedRate);
+
+            var orderHeader = _context.OrderHeaders.FirstOrDefault(x => x.Id == id);
+            if (orderHeader != null)
+            {
+                ShoppingCartVM.OrderHeader = orderHeader;
+            }
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+                var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+                ShoppingCartVM.ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.ApplicationUserId == claim.Value).ToList();
+                ShoppingCartVM.OrderHeader.ApplicationUserId = claim.Value;
+            }
+            else
+            {
+                var tempCartId = Request.Cookies["TempCartId"];
+                if (string.IsNullOrEmpty(tempCartId))
+                {
+                    //No hay carrito para procesar
+                    return RedirectToAction("Index", "Home");
+                }
+                ShoppingCartVM.ListCart = _context.ShoppingCarts.Include(x => x.Product).Where(x => x.TempCartId == tempCartId).ToList();
+            }
+
+            ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+
+            //prix
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                cart.Price = cart.Product.Price;
+                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Count * cart.Product.Price);
+            }
+
+            try
+            {             
+                decimal shippingCost;
+
+                try
+                {
+                    shippingCost = Convert.ToDecimal(rate.Amount.ToString());
+                    ShoppingCartVM.OrderHeader.OrderTotal += shippingCost;
+                    ShoppingCartVM.OrderHeader.ShippingAmount = shippingCost;
+                }
+                catch (Exception ex)
+                {
+                    // Añade manejo del error aquí si la conversión falla.
+                    ModelState.AddModelError("", "Hubo un error al calcular el costo de envío. Por favor intenta de nuevo.");
+                    return View(ShoppingCartVM);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Maneja el error. Por ejemplo, mostrar un mensaje al usuario sobre el problema con el cálculo del envío.
+                ModelState.AddModelError("", "Hubo un error al calcular el costo de envío. Por favor intenta de nuevo.");
+                return View(ShoppingCartVM);
+            }
+
+            ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusPending;
+            ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusPending;
+
+
+            _context.SaveChanges();
+
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                OrderDetail orderDetails = new OrderDetail
+                {
+                    ProductId = cart.ProductId,
+                    OrderId = ShoppingCartVM.OrderHeader.Id,
+                    Price = cart.Product.Price,
+                    Count = cart.Count
+                };
+                _context.OrderDetails.Add(orderDetails);
+                _context.SaveChanges();
+            }
+
+            //stripe settings/checkout
+
+            var domain = "https://localhost:44316/";
+            var options = new SessionCreateOptions
+            {
+                PaymentMethodTypes = new List<string>
+                    {
+                        "card",
+                    },
+                LineItems = new List<SessionLineItemOptions>(),
+
+                AutomaticTax = new SessionAutomaticTaxOptions
+                {
+                    Enabled = true,
+                },
+                Mode = "payment",
+                SuccessUrl = domain + $"ShoppingCarts/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+                CancelUrl = domain + $"ShoppingCarts/Summary",
+            };
+
+            foreach (var item in ShoppingCartVM.ListCart)
+            {
+                var sessionLineItem = new SessionLineItemOptions
+                {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long)(item.Product.Price * 100),
+                        Currency = "CAD",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = item.Product.Name,
+                        },
+                    },
+                    Quantity = item.Count,
+                };
+                options.LineItems.Add(sessionLineItem);
+            }
+
+            //Ajoute couts livraison au stripe
+            var shippingCostLineItem = new SessionLineItemOptions
+            {
+                PriceData = new SessionLineItemPriceDataOptions
+                {
+                    UnitAmount = (long)(ShoppingCartVM.OrderHeader.ShippingAmount * 100), // convierte el precio a centavos
+                    Currency = "CAD",
+                    ProductData = new SessionLineItemPriceDataProductDataOptions
+                    {
+                        Name = "Livraison",
+                    },
+                },
+                Quantity = 1,
+            };
+            options.LineItems.Add(shippingCostLineItem);
+
+            var service = new SessionService();
+            Session session = service.Create(options);
+            var order = _context.OrderHeaders.FirstOrDefault(x => x.Id == ShoppingCartVM.OrderHeader.Id);
+            order.PaymentIntentId = session.PaymentIntentId;
+            order.SessionId = session.Id;
+            order.PaymentDate = DateTime.Now;
+
+            //Shippo transaction
+            Transaction transaction = resource.CreateTransaction(new Hashtable
+                {
+                    { "rate", selectedRate},
+                    { "label_file_type", "PDF" },
+                    { "async", false }
+                });
+
+            if (transaction.Status.Equals("SUCCESS"))
+            {
+                order.TrackingNumber = transaction.TrackingNumber.ToString();
+                order.Carrier = shipment.Rates[0].Provider.ToString();
+
+                HttpContext.Session.SetString("transactionId", JsonConvert.SerializeObject(transaction.ObjectId));
+
+            }
+            else
+            {
+                // Aquí puedes manejar el caso en el que la transacción falla.
+                // Por ejemplo, podrías registrar un error.
+            }
+
+            if (!User.Identity.IsAuthenticated)
+            {
+                order.Email = ShoppingCartVM.OrderHeader.Email;
+            }
+            _context.SaveChanges();
+            Response.Headers.Add("Location", session.Url);
+            return new StatusCodeResult(303);
+
+
+        }
 
 
         public Shipment CreateShipment(OrderHeader orderHeader)
@@ -184,13 +373,13 @@ namespace ECommerce_Template_MVC.Controllers
             Address addressFrom = new Address
             {
                 // ... (rellena esta parte con los detalles de la dirección de envío de tu empresa o lugar de origen)
-                Name = "Nom de l'entreprise",
+                Name = "Template Store",
                 Company = "Nom de l'entreprise",
-                Street1 = "215 Clayton St.",
-                City = "San Francisco",
-                State = "CA",
-                Zip = "94117",
-                Country = "US",
+                Street1 = "5518 Rue Jean Talon E",
+                City = "Saint-Leonard",
+                State = "QC",
+                Zip = "H1S1L9",
+                Country = "CA",
                 Phone = "+1 555 555 5555",
                 Email = "empresa@gmail.com"
             };
@@ -200,11 +389,11 @@ namespace ECommerce_Template_MVC.Controllers
             {
                 // ... (basado en cartVM.OrderHeader, rellena los detalles de la dirección del cliente)
                 Name = orderHeader.Nom + " " + orderHeader.Prenom,
-                Street1 = "5450 Jean talon est",
-                City = "Saint Leonard",
-                State = "QB",
-                Zip = "H1S 1L6",
-                Country = "CA",
+                Street1 = "5450 jean talon est",
+                City = orderHeader.City,
+                State = orderHeader.State,
+                Zip = "H1S1L6",
+                Country = orderHeader.Country,
                 Phone = orderHeader.PhoneNumber,
                 Email = orderHeader.Email
             };
@@ -221,7 +410,7 @@ namespace ECommerce_Template_MVC.Controllers
                     products.Add(orderDetail.Product);
                 }
             }
-         
+
             var boxes = Box.DetermineSuitableBoxes(products);
             List<Parcel> parcels = new List<Parcel>();
 
@@ -232,16 +421,16 @@ namespace ECommerce_Template_MVC.Controllers
                     Length = box.Length.ToString(),
                     Width = box.Width.ToString(),
                     Height = box.Height.ToString(),
-                    Weight = 5,
+                    Weight = box.TotalWeight,
                     DistanceUnit = "cm",
                     MassUnit = "g"
                 };
                 parcels.Add(parcel);
             }
 
-         
-                // Crear el envío usando Shippo
-                Shipment shipment = resource.CreateShipment(new Hashtable
+
+            // Crear el envío usando Shippo
+            Shipment shipment = resource.CreateShipment(new Hashtable
                  {
                     { "address_from", addressFrom },
                     { "address_to", addressTo },
@@ -249,8 +438,8 @@ namespace ECommerce_Template_MVC.Controllers
                     { "async", false }
                  });
 
-                return shipment;
-         
+            return shipment;
+
         }
 
         //[HttpGet]
@@ -363,6 +552,12 @@ namespace ECommerce_Template_MVC.Controllers
 
         public IActionResult OrderConfirmation(int id)
         {
+
+            APIResource resource = new APIResource(_shippoSettings.Value.ShippoAPIKey);
+            //retrieve id de session
+            var shipmentId = HttpContext.Session.GetString("Shipment");
+            var shipment = resource.RetrieveShipment(shipmentId.Trim('"'));
+            //
             OrderHeader orderHeader = _context.OrderHeaders.Include(x => x.ApplicationUser).FirstOrDefault(x => x.Id == id);
             var service = new SessionService();
             Session session = service.Get(orderHeader.SessionId);
@@ -371,6 +566,11 @@ namespace ECommerce_Template_MVC.Controllers
             {
                 orderHeader.PaymentStatus = SD.PaymentStatusApproved;
                 orderHeader.OrderStatus = SD.StatusApproved;
+
+                var transactionId = HttpContext.Session.GetString("transactionId");
+                var transaction = resource.RetrieveTransaction(transactionId.Trim('"'));
+                orderHeader.TrackingNumber = transaction.TrackingNumber.ToString();
+                orderHeader.Carrier = transaction.TrackingUrlProvider.ToString();
             }
             else
             {
