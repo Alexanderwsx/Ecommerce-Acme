@@ -3,6 +3,8 @@ using ECommerce_Template_MVC.Models;
 using ECommerce_Template_MVC.Models.ViewModel;
 using ECommerce_Template_MVC.Utility;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using X.PagedList;
@@ -13,10 +15,14 @@ namespace ECommerce_Template_MVC.Controllers
     public class OrderController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailSender _emailSender;
+        private readonly RazorViewToStringRenderer _renderer;
 
-        public OrderController(ApplicationDbContext context)
+        public OrderController(ApplicationDbContext context, IEmailSender emailSender, RazorViewToStringRenderer renderer)
         {
+            _emailSender = emailSender;
             _context = context;
+            _renderer = renderer;
         }
 
         public async Task<IActionResult> Index(int? page, DateTime? startDate, DateTime? endDate, string orderStatus)
@@ -79,7 +85,13 @@ namespace ECommerce_Template_MVC.Controllers
             orderHeader.OrderStatus = SD.StatusShipped;
             await _context.SaveChangesAsync();
 
-            //ajouter notificaiton email au client
+            //send email to customer with emailsender
+            // Renderizar el correo
+            var emailHtml = await _renderer.RenderViewToStringAsync("Views/EmailTemplates/OrderShippedEmail.cshtml", orderHeader);
+
+            // Envía el correo
+            await _emailSender.SendEmailAsync(orderHeader.Email, "ECommerce - Order Shipped " + orderHeader.Id.ToString(), emailHtml);
+
 
             return RedirectToAction("Details", "Order", new { orderId = orderHeader.Id });
         }
@@ -89,6 +101,14 @@ namespace ECommerce_Template_MVC.Controllers
             OrderHeader orderHeader = await _context.OrderHeaders.FindAsync(id);
             orderHeader.OrderStatus = SD.StatusCancelled;
             await _context.SaveChangesAsync();
+
+            //send email to customer with emailsender
+            // Renderizar el correo
+            var emailHtml = await _renderer.RenderViewToStringAsync("Views/EmailTemplates/OrderShippedEmail.cshtml", orderHeader);
+
+            // Envía el correo
+            await _emailSender.SendEmailAsync(orderHeader.Email, "ECommerce - Order Cancelled " + orderHeader.Id.ToString(), emailHtml);
+
 
             //ajouter notificaiton email au client
             return RedirectToAction("Details", "Order", new { orderId = orderHeader.Id });

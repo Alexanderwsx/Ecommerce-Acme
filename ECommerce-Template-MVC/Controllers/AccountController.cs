@@ -3,7 +3,9 @@ using ECommerce_Template_MVC.Models;
 using ECommerce_Template_MVC.Models.ViewModel;
 using ECommerce_Template_MVC.Utility;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Stripe;
@@ -16,12 +18,17 @@ namespace ECommerce_Template_MVC.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IEmailSender _emailSender;
+        private readonly RazorViewToStringRenderer _renderer;
 
-        public AccountController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, 
+            SignInManager<ApplicationUser> signInManager, IEmailSender emailSender, RazorViewToStringRenderer renderer)
         {
             _userManager = userManager;
             _context = context;
             _signInManager = signInManager;
+            _emailSender = emailSender;
+            _renderer = renderer;
         }
         public IActionResult Register()
         {
@@ -38,6 +45,16 @@ namespace ECommerce_Template_MVC.Controllers
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, SD.Role_User_Individuel);
+
+                    //send email to customer with emailsender
+                    // Renderizar el correo
+                    var emailHtml = await _renderer.RenderViewToStringAsync("Views/EmailTemplates/RegisterConfirmation.cshtml",
+                        user);
+
+                    // Envía el correo
+                    await _emailSender.SendEmailAsync(user.Email,"Register Confirmation", emailHtml);
+
+
                     return RedirectToAction("Index", "Home");
                 }
                 foreach (var error in result.Errors)

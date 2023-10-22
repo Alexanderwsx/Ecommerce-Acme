@@ -7,6 +7,7 @@ using ECommerce_Template_MVC.Utility;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DbContextConnection") ?? throw new InvalidOperationException("Connection string 'DbContextConnection' not found.");
@@ -32,6 +33,11 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
 });
+
+//email services
+builder.Services.AddSingleton<IEmailSender, EmailSender>();
+builder.Services.AddScoped<RazorViewToStringRenderer>();
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

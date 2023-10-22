@@ -27,6 +27,7 @@ using Elfie.Serialization;
 using Newtonsoft.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Threading.Tasks.Sources;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace ECommerce_Template_MVC.Controllers
 {
@@ -35,12 +36,17 @@ namespace ECommerce_Template_MVC.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IOptions<ShippoSettings> _shippoSettings;
         private readonly IOptions<StripeSettings> _stripeSettings;
+        private readonly RazorViewToStringRenderer _renderer;
+        private readonly IEmailSender _emailSender;
 
-        public ShoppingCartsController(ApplicationDbContext context, IOptions<StripeSettings> stripeSettings, IOptions<ShippoSettings> shippoSettings)
+        public ShoppingCartsController(ApplicationDbContext context, IOptions<StripeSettings> stripeSettings, 
+            IOptions<ShippoSettings> shippoSettings, RazorViewToStringRenderer renderer, IEmailSender emailSender)
         {
             _context = context;
             _stripeSettings = stripeSettings;
             _shippoSettings = shippoSettings;
+            _renderer = renderer;
+            _emailSender = emailSender;
         }
 
         [BindProperty]
@@ -560,7 +566,7 @@ namespace ECommerce_Template_MVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult OrderConfirmation(int id)
+        public async Task<IActionResult> OrderConfirmation(int id)
         {
 
             APIResource resource = new APIResource(_shippoSettings.Value.ShippoAPIKey);
@@ -606,6 +612,17 @@ namespace ECommerce_Template_MVC.Controllers
                 }
             }
             _context.SaveChanges();
+
+            //send email to customer with emailsender
+            // Renderizar el correo
+            var emailHtml = await _renderer.RenderViewToStringAsync("Views/EmailTemplates/OrderShippedEmail.cshtml", 
+                orderHeader);
+
+            // Envía el correo
+            await _emailSender.SendEmailAsync(orderHeader.Email, "ECommerce - Order Confirmation" + 
+                orderHeader.Id.ToString(), emailHtml);
+
+
             return View(id);
         }
 
