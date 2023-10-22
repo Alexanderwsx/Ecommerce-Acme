@@ -1,0 +1,65 @@
+﻿@using ECommerce_Template_MVC.Models.ViewModel;
+@using X.PagedList
+@using ECommerce_Template_MVC.Models
+@using X.PagedList.Mvc.Core;
+@using X.PagedList.Web.Common;
+@model OrderVM
+
+<h2>Lista de Órdenes</h2>
+
+<!-- Formulario de filtrado por fechas -->
+<form method="get" action="@Url.Action("Index")">
+    <label>Desde: </label>
+    <input type="date" name="startDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")">
+
+    <label>Hasta: </label>
+    <input type="date" name="endDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")">
+
+    <label>Estado del Pedido: </label>
+
+    <select asp-for="OrderStatus" name="orderStatus" class="form-control">
+        <option value="">Todos</option>
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Processing">Processing</option>
+        <option value="Cancelled">Cancelled</option>
+        <option value="Refunded">Refunded</option>
+        <option value="Shipped">Shipped</option>
+
+    </select>
+
+
+
+    <input type="submit" value="Filtrar">
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID de Orden</th>
+            <th>OtroCampo1</th>
+            <th>OtroCampo2</th>
+            <th></th>
+            <!-- Agrega más campos según necesites -->
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model.OrderHeader)
+        {
+            <tr>
+                <td>@order.Id</td> <!-- Suponiendo que tengas un campo llamado OrderId -->
+                <td>@order.OrderDate</td>
+                <td>@order.Prenom</td>
+                <td><a asp-action="Details" asp-route-orderId="@order.Id">Details</a></td>
+                <!-- Agrega más campos según necesites -->
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Paginación -->
+<div class="text-center">
+    @Html.PagedListPager(Model.OrderHeader, page => Url.Action("Index", new { page, startDate = Model.StartDate, endDate = Model.EndDate, orderStatus = Model.OrderStatus }))
+
+</div>
