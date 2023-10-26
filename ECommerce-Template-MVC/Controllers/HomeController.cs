@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Threading.Tasks.Dataflow;
 using X.PagedList;
 
 namespace ECommerce_Template_MVC.Controllers
@@ -34,6 +35,11 @@ namespace ECommerce_Template_MVC.Controllers
                 return View();
             }
          
+        }
+
+        public ActionResult About()
+        {
+            return View();
         }
 
         //public async Task<IActionResult> Index(string searchTerm, string[] types, decimal? priceMin, decimal? priceMax, int? page)
