@@ -22,46 +22,60 @@ namespace ECommerce_Template_MVC.Controllers
 
         }
 
-        public async Task<IActionResult> Index(string searchTerm, string[] types, decimal? priceMin, decimal? priceMax, int? page)
+        public async Task<IActionResult> Index()
         {
-            var query = _context.Products.AsQueryable();
-
-            // Filtrar por nombre
-            if (!string.IsNullOrWhiteSpace(searchTerm))
+            if(_context != null)
             {
-                query = query.Where(p => p.Name.Contains(searchTerm));
+                var products = await _context.Products.Include(_context => _context.Images).Take(3).ToListAsync();
+                return View(products);
             }
-
-            // Filtrar por tipo
-            if (types != null && types.Length > 0)
+            else
             {
-                query = query.Where(p => types.Contains(p.Type));
+                return View();
             }
-
-            // Filtrar por rango de precio
-            if (priceMin.HasValue)
-            {
-                query = query.Where(p => p.Price >= priceMin.Value);
-            }
-            if (priceMax.HasValue)
-            {
-                query = query.Where(p => p.Price <= priceMax.Value);
-            }
-
-            // Paginación
-            int pageSize = 5;
-            int pageNumber = (page ?? 1);
-            var pagedProducts = await query.ToPagedListAsync(pageNumber, pageSize);
-            var productTypes = await _context.Products.Select(p => p.Type).Distinct().ToListAsync();
-
-            var viewModel = new ProductsViewModel
-            {
-                Products = pagedProducts,
-                ProductTypes = productTypes
-            };
-
-            return View(viewModel);
+         
         }
+
+        //public async Task<IActionResult> Index(string searchTerm, string[] types, decimal? priceMin, decimal? priceMax, int? page)
+        //{
+        //    var query = _context.Products.AsQueryable();
+
+        //    // Filtrar por nombre
+        //    if (!string.IsNullOrWhiteSpace(searchTerm))
+        //    {
+        //        query = query.Where(p => p.Name.Contains(searchTerm));
+        //    }
+
+        //    // Filtrar por tipo
+        //    if (types != null && types.Length > 0)
+        //    {
+        //        query = query.Where(p => types.Contains(p.Type));
+        //    }
+
+        //    // Filtrar por rango de precio
+        //    if (priceMin.HasValue)
+        //    {
+        //        query = query.Where(p => p.Price >= priceMin.Value);
+        //    }
+        //    if (priceMax.HasValue)
+        //    {
+        //        query = query.Where(p => p.Price <= priceMax.Value);
+        //    }
+
+        //    // Paginación
+        //    int pageSize = 5;
+        //    int pageNumber = (page ?? 1);
+        //    var pagedProducts = await query.ToPagedListAsync(pageNumber, pageSize);
+        //    var productTypes = await _context.Products.Select(p => p.Type).Distinct().ToListAsync();
+
+        //    var viewModel = new ProductsViewModel
+        //    {
+        //        Products = pagedProducts,
+        //        ProductTypes = productTypes
+        //    };
+
+        //    return View(viewModel);
+        //}
 
 
         public IActionResult Details(int productId)
