@@ -1836,6 +1836,7 @@ blockquote {
 }
 
 .shop-image.tumbler-1 {
+  object-fit: contain;
   background-image: url('https://d3e54v103j8qbb.cloudfront.net/img/background-image.svg');
   background-position: 50%;
   background-size: cover;
@@ -3141,5 +3142,25 @@ blockquote {
 
 
 .mb-0{
-    margin-bottom:0px !important;
+margin-bottom: 0 !important;
+}
+
+#successMessageOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo gris con transparencia */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Asegura que se superponga sobre otros elementos */
+}
+
+#successMessage {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }

@@ -1,8 +1,11 @@
 ﻿using ECommerce_Template_MVC.Data;
 using ECommerce_Template_MVC.Models;
 using ECommerce_Template_MVC.Models.ViewModel;
+using ECommerce_Template_MVC.Utility;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -15,17 +18,19 @@ namespace ECommerce_Template_MVC.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IEmailSender _emailSender;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, IEmailSender emailSender)
         {
             _logger = logger;
             _context = context;
+            _emailSender = emailSender;
 
         }
 
         public async Task<IActionResult> Index()
         {
-            if(_context != null)
+            if (_context != null)
             {
                 var products = await _context.Products.Include(_context => _context.Images).Take(3).ToListAsync();
                 return View(products);
@@ -34,13 +39,43 @@ namespace ECommerce_Template_MVC.Controllers
             {
                 return View();
             }
-         
+
         }
 
         public ActionResult About()
         {
             return View();
         }
+
+        public ActionResult Contact()
+        {
+            var model = new ContactForm();
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Contact(ContactForm contactForm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(contactForm);
+            }
+            var selectedSubjectText = contactForm.Subjects.FirstOrDefault(s => s.Value == contactForm.Subject)?.Text;
+
+
+            var message = $"Name: {contactForm.Name} <br/> " +
+                $"Email: {contactForm.Email} <br/> " +
+                $"Subject: {selectedSubjectText} <br/> " +
+                $"Message: {contactForm.Message}";
+
+            await _emailSender.SendEmailAsync("roberto.au.vera@gmail.com", selectedSubjectText, message);
+            ViewData["MessageSent"] = true;
+
+            var model = new ContactForm();
+            return View(model);
+        }
+
+        
 
         //public async Task<IActionResult> Index(string searchTerm, string[] types, decimal? priceMin, decimal? priceMax, int? page)
         //{

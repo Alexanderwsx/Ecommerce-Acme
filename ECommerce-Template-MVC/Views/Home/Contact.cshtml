@@ -1,0 +1,100 @@
+﻿@model ECommerce_Template_MVC.Utility.ContactForm
+
+<div class="contact-hero-section">
+    <div class="contact-hero-bg-wrapper">
+        <div class="container contact">
+            <h1 class="heading">Contact Acme Outdoors</h1>
+            <div class="contact-block-wrapper">
+                <div class="contact-block">
+                    <img src="images/chat-alt.svg" alt="" class="contact-icon">
+                    <h2>Contact Us</h2>
+                    <p>Just want to say hi? We&#x27;d love to hear from you. We love our customers and community! </p>
+                    <a href="#contact" class="btn w-button">Send Us A Message</a>
+                </div>
+                <div class="contact-block">
+                    <img src="images/chat-warning.svg" alt="" class="contact-icon">
+                    <h2>Get Support</h2>
+                    <p>Have an issue with an order or with a product you purchased from us? Fill out our support form.</p>
+                    <a href="#contact" class="btn w-button">Contact Support</a>
+                </div>
+            </div>
+        </div>
+        <div class="contact-image-div"></div>
+    </div>
+</div>
+<div id="contact" class="content-section">
+    <div class="container">
+        <div class="contact-wrapper">
+            <div class="contact-left">
+                <h2>Contact Us</h2>
+                <div class="w-richtext">
+                    <p>Acme Outdoors<br>123 Rainy Street<br>Oklahoma City, OK 73129</p>
+                    <p>‍<br><strong>General Inquiries:</strong> (405) 555-5555<br><strong>Customer Support:</strong> (405) 555-5556</p>
+                </div>
+            </div>
+            <div class="contact-right">
+                <h2>Contact / Support Form</h2>
+                <p>Send us a message and we&#x27;ll get back to you as soon as we can! </p>
+                <div class="w-form">
+                    <form asp-action="Contact">
+                        <label asp-for="@Model.Name"></label>
+                        <input asp-for="@Model.Name" class="input w-input" maxlength="256" placeholder="Enter your name" required>
+                        <span asp-validation-for="@Model.Name" class="text-danger"></span>
+
+                        <label asp-for="@Model.Email"></label>
+                        <input asp-for="@Model.Email" class="input w-input" maxlength="256" placeholder="Enter your email address" required>
+                        <span asp-validation-for="@Model.Email" class="text-danger"></span>
+
+                        <label asp-for="@Model.Subject"></label>
+                        <select asp-for="@Model.Subject" asp-items="@Model.Subjects" class="input w-input" required></select>
+                        <span asp-validation-for="@Model.Subject" class="text-danger"></span>
+
+                        <label asp-for="@Model.Message"></label>
+                        <textarea asp-for="@Model.Message" class="input w-input" maxlength="5000" placeholder="Enter your message" required></textarea>
+                        <span asp-validation-for="@Model.Message" class="text-danger"></span>
+
+                        <input type="submit" style="display:block" value="Submit" data-wait="Please wait..." class="btn w-button">
+                    </form>
+
+
+                    <div id="successMessageOverlay" style="display: none;">
+                        <div id="successMessage">
+                        Thank you! Your submission has been received! We&#x27;ll be in touch soon!
+                        </div>
+                    </div>
+                    <div class="error w-form-fail">
+                        <div>Oops! Something went wrong while submitting the form.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @if (ViewData["MessageSent"] as bool? == true)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                let successMessageOverlay = document.getElementById("successMessageOverlay");
+                let successMessage = document.getElementById("successMessage");
+
+                successMessageOverlay.style.display = "flex";
+
+                // Ocultar el mensaje después de 20 segundos
+                setTimeout(function () {
+                    successMessageOverlay.style.display = "none";
+                }, 20000);
+
+                // Ocultar el mensaje y el overlay cuando se haga clic en cualquier parte del overlay
+                successMessageOverlay.addEventListener("click", function () {
+                    successMessageOverlay.style.display = "none";
+                });
+
+                // Evitar que el evento de clic en el mensaje se propague al overlay (esto evitará que el mensaje se cierre si se hace clic directamente en él)
+                successMessage.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                });
+            });
+        </script>
+    }
+}
