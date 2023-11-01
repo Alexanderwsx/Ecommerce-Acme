@@ -2,10 +2,86 @@
 
 <!-- ... -->
 
-<form asp-action="Register" method="post">
-    <input asp-for="Email" placeholder="email"/>
-    <input asp-for="Nom" placeholder="nom"/>
-    <!-- ... otros campos ... -->
-    <input name="Password" type="password" />
-    <button type="submit">Registrarse</button>
-</form>
+<div class="bg-account">
+    <div class="div-block-4">
+        <div class="log-in-form-block register w-form">
+            <div id="w-node-_059c6d1c-ec2e-5cdc-40b6-ce0163f6ccd9-f862aac4" class="tblock-signup">Sign Up</div>
+            <form asp-action="Register" method="post" class="form">
+                <div id="w-node-_7e19d503-b615-4b6b-c491-e1b3e732b370-f862aac4">
+                    <label asp-for="Prenom">First Name</label>
+                    <input asp-for="Prenom" type="text" class="w-input" required="">
+                </div>
+                <div id="w-node-ba83bf6e-a74d-10fd-e019-11fc7140eba6-f862aac4">
+                    <label asp-for="Nom">Last Name</label>
+                    <input asp-for="Nom" type="text" class="w-input" required="">
+                </div>
+                <div id="w-node-b65fb420-0ff2-097c-9e09-a23f546e9179-f862aac4">
+                    <label asp-for="Email">Email</label>
+                    <input asp-for="Email" type="email" class="w-input" required="">
+                </div>
+                <div id="w-node-_097882a6-7929-2f80-9f58-1ea0a302eda0-f862aac4">
+                    <label asp-for="PhoneNumber">Phone</label>
+                    <input asp-for="PhoneNumber" type="text" class="w-input" required="">
+                </div>
+                <div id="w-node-a8ec5b6a-92c8-3d9c-205d-f1d72cac6413-f862aac4">
+                    <label for="Password">Password</label><input type="password" id="Password" class="w-input" name="Password" placeholder="" required="">
+                </div>
+                <div id="w-node-e09ac517-3db4-fa6b-dc40-2b477a849e01-f862aac4"><label for="PasswordConfirmation">Confirmation paswword</label><input type="password" id="PasswordConfirmation" class="w-input" name="PasswordConfirmation" required=""
+                 oninput="verificar()"></div>
+                <div id="customValidationSummary" class="error" style="display:none;"></div>
+
+                <div id="w-node-_8bd18343-9e50-cb1b-034c-f926606a5aa1-f862aac4">
+                    <label asp-for="Adresse">Address</label>
+                    <input asp-for="Adresse" type="text" class="w-input" required="">
+                </div>
+                <div id="w-node-_15e20012-aa01-9255-be4b-4ae2ea71800d-f862aac4">
+                    <label asp-for="Ville">City</label>
+                    <input asp-for="Ville" type="text" class="w-input" required="">
+                </div>
+                <div id="w-node-_8fe94527-ab3e-00bd-e3fc-5900642700b9-f862aac4">
+                    <label asp-for="Province">State</label>
+                    <input asp-for="Province" type="text" class="w-input" required="">
+                </div>
+                <div id="w-node-cab8bc6d-f0b3-9344-092b-5451ebfcbbb2-f862aac4">
+                    <label asp-for="CodePostal">Postal code</label>
+                    <input asp-for="CodePostal" type="text" class="w-input" required="">
+                </div>
+                <div id="w-node-_1cb3cedd-8412-8d50-3bb2-1e8ea697a4fc-f862aac4">
+                    <label asp-for="Pays">Country</label>
+                    <input asp-for="Pays" type="text" class="w-input" required="">
+                </div>
+                <label id="w-node-_684fd60c-1c60-2666-5084-2169c082692f-f862aac4" class="w-checkbox"><input type="checkbox" id="checkbox" name="checkbox" data-name="Checkbox" required="" class="w-checkbox-input"><span class="w-form-label" for="checkbox">By creating an account, I agree to this website&#x27;s <a href="#" class="w-inline-block">privacy policy</a> and <a href="#" class="w-inline-block">terms of service</a></span></label>
+                <div class="error" style="grid-area: span 1 / span 2 / span 1 / span 2" asp-validation-summary="ModelOnly"></div>
+
+                <input type="submit" value="Submit" data-wait="Please wait..." id="w-node-_8a4917a3-a757-ddb1-26aa-a4a302f3d31c-f862aac4" class="btn w-button">
+            </form>
+            <div class="w-form-done">
+                <div>Thank you! Your submission has been received!</div>
+            </div>
+            <div class="w-form-fail">
+                <div>Oops! Something went wrong while submitting the form.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function verificar() {
+        var contraseña1 = document.getElementById('Password');
+        var contraseña2 = document.getElementById('PasswordConfirmation');
+        var divValidacionPersonalizada = document.getElementById('customValidationSummary');
+
+        if (contraseña1.value !== contraseña2.value) {
+            contraseña1.style.borderColor = "red";
+            contraseña2.style.borderColor = "red";
+            divValidacionPersonalizada.innerHTML = "<span style='margin-left:10px''>Password do not match</span>";
+            divValidacionPersonalizada.style.display = 'block';
+        } else {
+            contraseña1.style.borderColor = "";
+            contraseña2.style.borderColor = "";
+            divValidacionPersonalizada.innerHTML = "";
+            divValidacionPersonalizada.style.display = 'none';
+        }
+    }
+
+</script>

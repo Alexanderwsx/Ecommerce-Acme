@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ECommerce_Template_MVC.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreated : Migration
+    public partial class IniialCreated : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -70,7 +70,11 @@ namespace ECommerce_Template_MVC.Migrations
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Brand = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    QuantiteEnStock = table.Column<int>(type: "int", nullable: false)
+                    QuantiteEnStock = table.Column<int>(type: "int", nullable: false),
+                    Weight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Height = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Width = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Length = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -189,9 +193,10 @@ namespace ECommerce_Template_MVC.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ShippingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ShippingAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     OrderTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     OrderStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -201,6 +206,7 @@ namespace ECommerce_Template_MVC.Migrations
                     PaymentDueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     SessionId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PaymentIntentId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StreetAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -217,8 +223,7 @@ namespace ECommerce_Template_MVC.Migrations
                         name: "FK_OrderHeaders_AspNetUsers_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -303,9 +308,9 @@ namespace ECommerce_Template_MVC.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "b026b3af-28c6-49c4-ad47-3e4c7a2e3ff5", null, "Admin", "Admin" },
-                    { "ccfcecc8-6108-49e8-b639-5ad3059d9097", null, "User", "User" },
-                    { "e2d90b56-39b4-40a0-b5b0-c3c9eb746c77", null, "Employe", "Employe" }
+                    { "3060cb67-7dd3-4d20-8ff1-ac2e6c112c14", null, "Admin", "Admin" },
+                    { "5dfe56d4-2d8a-48ab-bfd4-be29d3449ee8", null, "User", "User" },
+                    { "dfd286b8-653c-43b5-8f46-5fd2f401e582", null, "Employe", "Employe" }
                 });
 
             migrationBuilder.CreateIndex(

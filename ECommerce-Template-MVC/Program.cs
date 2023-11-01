@@ -55,9 +55,6 @@ builder.Services.AddSession(options =>
 builder.Services.Configure<ShippoSettings>(builder.Configuration.GetSection("Shippo"));
 
 
-
-
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -87,6 +84,9 @@ app.UseSession();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+app.UseStatusCodePagesWithRedirects("/Home/NotFound?statusCode={0}"); // Agrega esta línea
 
 //Execute dbInitializer
 var scope = app.Services.CreateScope();

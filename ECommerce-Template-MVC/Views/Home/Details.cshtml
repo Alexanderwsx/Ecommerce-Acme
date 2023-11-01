@@ -1,41 +1,44 @@
 ﻿@model ShoppingCart
-
-<form method="post" asp-action="AddToCart">
-    <input hidden asp-for="ProductId" />
-    <div class="container m-10 pt-5">
-        <div class="row flex-column flex-sm-row justify-content-center text-center align-content-center">
-
-            <div class="col-12 col-md-6 mb-4 ">
-                <img src="@Model.Product.Images" width=50% alt="Produit">
+<div class="page-title-section">
+    <div class="container">
+        <h1 class="page-title">@Model.Product.Name</h1>
+    </div>
+</div>
+<div class="content-section">
+    <div class="container">
+        <div class="shopping-page-wrapper">
+            <div class="shopping-page-left">
+               
+<img src="@Model.Product.Images[0].ImageUrl" alt="" class="shopping-page-image">
+                 
             </div>
-
-            <div class="col-12 col-md-6 text-center">
-                <h3>
-                    @Model.Product.Name
-                </h3>
-                <p>Marque: @Model.Product.Brand</p>
-                <hr />
-                <h4>@Model.Product.Price.ToString("c")</h4>
-                <div class="row pl-2">
-                    <div class="form-control col-8">
-                        <select asp-for="Count" class="form-control">
-                            @for (var i = 1; i <= Math.Min(Model.Product.QuantiteEnStock, 20); i++)
-                            {
-                                <option value="@i">@i</option>
-                            }
-                        </select>
+            <div class="shipping-page-right">
+                <h2 class="page-product-headin">@Model.Product.Name</h2>
+                <div class="page-price-wrapping">
+                    <div class="shop-item-price-page">@Model.Product.Price</div>
+                    <div class="shop-item-price-page compare-at"></div>
+                </div>
+                <div>
+                    <form data-node-type="commerce-add-to-cart-form" class="w-commerce-commerceaddtocartform">
+                        <label for="quantity-8342fe54ad998bceba4bd86dd02b8e79">Quantity</label>
+                        <div class="add-to-cart-page-wrapper"><input type="number" pattern="^[0-9]+$" inputmode="numeric" id="quantity-8342fe54ad998bceba4bd86dd02b8e79" name="commerce-add-to-cart-quantity-input" min="1" class="w-commerce-commerceaddtocartquantityinput input cart-quantity" value="1"><input type="submit" value="Add to Cart" data-node-type="commerce-add-to-cart-button" data-loading-text="Adding to cart..." aria-busy="false" aria-haspopup="dialog" class="w-commerce-commerceaddtocartbutton btn outline"></div>
+                    </form>
+                    <div style="display:none" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">
+                        <div>This product is out of stock.</div>
                     </div>
-                    <button class="addToCart" data-productid="@Model.ProductId">Agregar al carrito</button>
-
+                    <div aria-live="" data-node-type="commerce-add-to-cart-error" style="display:none" class="w-commerce-commerceaddtocarterror">
+                        <div data-node-type="commerce-add-to-cart-error" data-w-add-to-cart-quantity-error="Product is not available in this quantity." data-w-add-to-cart-general-error="Something went wrong when adding this item to the cart." data-w-add-to-cart-mixed-cart-error="You can’t purchase another product with a subscription." data-w-add-to-cart-buy-now-error="Something went wrong when trying to purchase this item." data-w-add-to-cart-checkout-disabled-error="Checkout is disabled on this site." data-w-add-to-cart-select-all-options-error="Please select an option in each set.">Product is not available in this quantity.</div>
+                    </div>
+                </div>
+                <div class="w-richtext">@Model.Product.Description</div>
+                <div>
+                    <h3 class="page-product-headin">Tweet about #AcmeOutdoors products</h3>
+                    <div class="w-widget w-widget-twitter"><iframe allowtransparency="true" frameborder="0" scrolling="no" src="https://platform.twitter.com/widgets/tweet_button.html#counturl=biznus-template.io&amp;dnt=true&amp;height=28&amp;show_count=false&amp;size=l&amp;text=You'll%20love%20the%20product%20from%20Acme%20Outdoors!&amp;url=http%3A%2F%2Fbiznus-template.io&amp;width=76" style="border: none; height: 28px; overflow: hidden; width: 76px;"></iframe></div>
                 </div>
             </div>
         </div>
-
-        <div class="col-12 mb-4 mt-4">
-            <h3> À propos de cet article </h3>
-            <p>@Html.Raw(Model.Product.Description)</p>
-        </div>
-</form>
+    </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="~/js/addToLocalCart.js"></script>

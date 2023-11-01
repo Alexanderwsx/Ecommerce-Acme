@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce_Template_MVC.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231004052732_addShippingFee")]
-    partial class addShippingFee
+    [Migration("20231027092207_IniialCreated")]
+    partial class IniialCreated
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -362,19 +362,19 @@ namespace ECommerce_Template_MVC.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "b8585294-bbae-4986-8d3e-064d34590617",
+                            Id = "3060cb67-7dd3-4d20-8ff1-ac2e6c112c14",
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "715afd5d-fe01-4afe-bd74-dd9bd2227a78",
+                            Id = "5dfe56d4-2d8a-48ab-bfd4-be29d3449ee8",
                             Name = "User",
                             NormalizedName = "User"
                         },
                         new
                         {
-                            Id = "41d5b512-4a7e-4e63-9437-1cbea4875acd",
+                            Id = "dfd286b8-653c-43b5-8f46-5fd2f401e582",
                             Name = "Employe",
                             NormalizedName = "Employe"
                         });

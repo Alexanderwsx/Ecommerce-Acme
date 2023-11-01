@@ -75,7 +75,52 @@ namespace ECommerce_Template_MVC.Controllers
             return View(model);
         }
 
-        
+        public async Task<IActionResult> Shop(string searchTerm, string[] types, decimal? priceMin, decimal? priceMax, int? page)
+        {
+
+            var query = _context.Products.AsQueryable();
+            query = query.Include(p => p.Images);
+
+
+            // Filtrar por nombre
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(p => p.Name.Contains(searchTerm));
+            }
+
+            // Filtrar por tipo
+            if (types != null && types.Length > 0)
+            {
+                query = query.Where(p => types.Contains(p.Type));
+            }
+
+            // Filtrar por rango de precio
+            if (priceMin.HasValue)
+            {
+                query = query.Where(p => p.Price >= priceMin.Value);
+            }
+            if (priceMax.HasValue)
+            {
+                query = query.Where(p => p.Price <= priceMax.Value);
+            }
+
+
+            // Paginación
+            int pageSize = 3;
+            int pageNumber = (page ?? 1);
+            var pagedProducts = await query.ToPagedListAsync(pageNumber, pageSize);
+            var productTypes = await _context.Products.Select(p => p.Type).Distinct().ToListAsync();
+
+            var viewModel = new ProductsViewModel
+            {
+                Products = pagedProducts,
+                ProductTypes = productTypes
+            };
+
+            return View(viewModel);
+        }
+
+
 
         //public async Task<IActionResult> Index(string searchTerm, string[] types, decimal? priceMin, decimal? priceMax, int? page)
         //{
@@ -125,7 +170,7 @@ namespace ECommerce_Template_MVC.Controllers
             {
                 Count = 1,
                 ProductId = productId,
-                Product = _context.Products.Find(productId)
+                Product = _context.Products.Include(p =>p.Images).Where(p => p.Id == productId).FirstOrDefault()
             };
             return View(cartObj);
         }
@@ -233,5 +278,22 @@ namespace ECommerce_Template_MVC.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+
+
+        public IActionResult NotFound(int? statusCode = null)
+        {
+            if (statusCode.HasValue)
+            {
+                if (statusCode == 404)
+                {
+                    var viewName = "Error404";
+                    // Aquí puedes agregar lógica adicional si lo necesitas
+                    return View(viewName);
+                }
+            }
+            return View("Error");
+        }
     }
+
 }

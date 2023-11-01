@@ -1,13 +1,17 @@
 ﻿@using ECommerce_Template_MVC.Models
 @model IEnumerable<Product>
 
+@{
+    ViewData["Title"] = "Home Page";
+}
+
 <div class="hero-section">
     <div class="container">
         <div class="hero-wrapper">
             <h1 class="hero-heading">Serving you <br>since 1989.</h1>
             <p class="hero-paragraph">Acme Outdoors is an outdoor and adventure shop located in the Boathouse District in Oklahoma City.</p>
             <div class="hero-button-wrapper">
-                <a href="shop.html" class="btn light outline w-button">Shop Merch</a>
+                <a asp-action="Shop" asp-controller="Home" class="btn light outline w-button">Shop Merch</a>
             </div>
         </div>
     </div>
@@ -29,21 +33,29 @@
                         <div class="shop-item-wrapper">
                             <a href="#" class="shop-item-link-wrapper w-inline-block">
                                 <div class="shop-image tumbler-1">
-                                    <img class="shop-image mb-0" src="@item.Images[0].ImageUrl">
+                                    @if (item.Images.Any())
+                                    {
+                                        <img class="shop-image mb-0" src="@item.Images[0].ImageUrl">
+                                    }
+                                    else
+                                    {
+                                    // Puedes mostrar una imagen por defecto o algún otro contenido si no hay imágenes disponibles
+                                        <img class="shop-image mb-0" src=~/images/chat-alt.svg>
+                                    }
                                     <div class="pill-2 badge primary sale">Sale</div>
                                 </div>
                                 <div class="shop-details-wrapper">
                                     <div class="shop-details-left">
-                                        <div class="shop-item-name"></div>
+                                        <div class="shop-item-name">@item.Name</div>
                                         <div class="price-wrapper">
-                                            <div class="shop-item-price"></div>
-                                            <div class="shop-item-price compare"></div>
+                                            <div class="shop-item-price">@item.Price</div>
+                                            <div class="shop-item-price compare">@(Convert.ToDecimal(item.Price)+30)</div>
                                         </div>
                                     </div>
                                 </div>
                             </a>
                             <div class="shop-button-wrapper">
-                                <a href="#" class="btn w-button">Details</a>
+                                <a asp-action="Details" asp-route-productId="@item.Id" class="btn w-button">Details</a>
                             </div>
                         </div>
                     </div>
@@ -52,7 +64,7 @@
          
         </div>
         <div class="shop-more">
-            <a href="shop.html" class="btn dark w-button">View All Products</a>
+            <a asp-action="Shop" asp-controller="Home" class="btn dark w-button">View All Products</a>
         </div>
     </div>
 </div>

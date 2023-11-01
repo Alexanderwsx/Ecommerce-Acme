@@ -37,7 +37,7 @@ namespace ECommerce_Template_MVC.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Register([Bind("UserName,Email,Nom,Prenom,Adresse,Ville,Province,CodePostal,Pays")] ApplicationUser user, string Password)
-        {
+       {
             if (ModelState.IsValid)
             {
                 user.UserName = user.Email;
