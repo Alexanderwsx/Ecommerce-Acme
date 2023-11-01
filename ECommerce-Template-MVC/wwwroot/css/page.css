@@ -37,3 +37,20 @@ ul.pagination li {
 .vh-70{
 min-height: 70vh;
 }
+
+.shop-image.tumbler-1 {
+    object-fit: contain;
+    background-position: 50%;
+    background-size: cover;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.mb-0{
+margin-bottom: 0px !important;
+}
+
+.shop-image {
+    background-image: none !important;
+    object-fit: contain;
+}
