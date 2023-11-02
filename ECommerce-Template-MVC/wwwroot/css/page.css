@@ -54,3 +54,7 @@ margin-bottom: 0px !important;
     background-image: none !important;
     object-fit: contain;
 }
+.shopping-page-image {
+    object-fit: contain;
+    background-image: none !important;
+}

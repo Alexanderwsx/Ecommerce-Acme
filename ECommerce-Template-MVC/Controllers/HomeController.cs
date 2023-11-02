@@ -106,7 +106,7 @@ namespace ECommerce_Template_MVC.Controllers
 
 
             // Paginación
-            int pageSize = 3;
+            int pageSize = 12;
             int pageNumber = (page ?? 1);
             var pagedProducts = await query.ToPagedListAsync(pageNumber, pageSize);
             var productTypes = await _context.Products.Select(p => p.Type).Distinct().ToListAsync();

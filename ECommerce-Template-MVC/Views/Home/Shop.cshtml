@@ -64,7 +64,7 @@
                         }
 
                     </div>
-                    @if (Model.Products.Count > 3)
+                    @if (Model.Products.Count > 12)
                     {
                         <div class="pagination">
                             @Html.PagedListPager(Model.Products, page => Url.Action("Shop", new { page }), new PagedListRenderOptions() {
