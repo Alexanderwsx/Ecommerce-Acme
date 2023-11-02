@@ -19,9 +19,22 @@
                     <div class="shop-item-price-page compare-at"></div>
                 </div>
                 <div>
-                    <form data-node-type="commerce-add-to-cart-form" class="w-commerce-commerceaddtocartform">
+                    <form method="post" asp-action="AddToCart" class="w-commerce-commerceaddtocartform">
+                        <input hidden asp-for="ProductId" />
                         <label for="quantity-8342fe54ad998bceba4bd86dd02b8e79">Quantity</label>
-                        <div class="add-to-cart-page-wrapper"><input type="number" pattern="^[0-9]+$" inputmode="numeric" id="quantity-8342fe54ad998bceba4bd86dd02b8e79" name="commerce-add-to-cart-quantity-input" min="1" class="w-commerce-commerceaddtocartquantityinput input cart-quantity" value="1"><input type="submit" value="Add to Cart" data-node-type="commerce-add-to-cart-button" data-loading-text="Adding to cart..." aria-busy="false" aria-haspopup="dialog" class="w-commerce-commerceaddtocartbutton btn outline"></div>
+                        <div class="add-to-cart-page-wrapper">
+                            <select asp-for="Count" class="w-commerce-commerceaddtocartquantityinput input cart-quantity">
+                                @for (var i = 1; i <= Math.Min(Model.Product.QuantiteEnStock, 20); i++)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </select>
+                    
+                           
+
+                            <button class="w-commerce-commerceaddtocartbutton btn outline addToCart" data-productid="@Model.ProductId">Add To Cart</button>
+
+                        </div>
                     </form>
                     <div style="display:none" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">
                         <div>This product is out of stock.</div>

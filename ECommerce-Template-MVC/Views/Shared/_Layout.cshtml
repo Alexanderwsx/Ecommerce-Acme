@@ -57,7 +57,9 @@
                             <div data-node-type="commerce-cart-wrapper" data-open-product="" data-wf-cart-type="rightSidebar" data-wf-cart-query="" data-wf-page-link-href-prefix="" class="w-commerce-commercecartwrapper cart-menu">
                                 <a href="#" data-node-type="commerce-cart-open-link" class="w-commerce-commercecartopenlink cart w-inline-block" role="button" aria-haspopup="dialog" aria-label="Open cart">
                                     <img src="~/images/cart_1.svg" alt="" class="cart-icon">
-                                    <div class="w-commerce-commercecartopenlinkcount cart-quantity-cart">0</div>
+                                    <div class="w-commerce-commercecartopenlinkcount cart-quantity-cart">
+                                        @await Component.InvokeAsync("CartCount")
+                                    </div>
                                 </a>
                                 <div data-node-type="commerce-cart-container-wrapper" style="display:none" class="w-commerce-commercecartcontainerwrapper w-commerce-commercecartcontainerwrapper--cartType-rightSidebar">
                                     <div data-node-type="commerce-cart-container" role="dialog" class="w-commerce-commercecartcontainer">
